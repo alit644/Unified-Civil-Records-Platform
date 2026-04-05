@@ -2,15 +2,10 @@
 
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
+import { Column, DataTable } from "@/components/DataTable";
+import { Employee } from "@/types";
 
-interface Employee {
-  name: string;
-  username: string;
-  role: string;
-  status: string;
-  events: string;
-  docs: string;
-}
+
 
 const roleBadge = (r: string) => {
   if (r === "مشرف") return "badge-blue";
@@ -31,65 +26,86 @@ export default function EmployeeManager({ initialEmployees }: EmployeeManagerPro
     updated[index].status = updated[index].status === "نشط" ? "موقوف" : "نشط";
     setEmployees(updated);
   };
+  const columns: Column<Employee>[] = [
+    {
+      key: "name",
+      header: "اسم الموظف",
+      render: (e) => (
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+            {e.name.charAt(0)}
+          </div>
+          <span className="font-medium">{e.name}</span>
+        </div>
+      ),
+    },
+    {
+      key: "username",
+      header: "اسم المستخدم",
+      render: (e) => (
+        <span className="font-mono text-xs text-muted-foreground">{e.username}</span>
+      ),
+    },
+    {
+      key: "role",
+      header: "الدور",
+      render: (e) => (
+        <span className={roleBadge(e.role)}>{e.role}</span>
+      ),
+    },
+    {
+      key: "status",
+      header: "الحالة",
+      render: (e) => (
+        <span className={e.status === "نشط" ? "badge-active" : "badge-danger"}>{e.status}</span>
+      ),
+    },
+    {
+      key: "events",
+      header: "المعاملات",
+      render: (e) => (
+        <span className="text-muted-foreground">{e.events}</span>
+      ),
+    },
+    {
+      key: "docs",
+      header: "الوثائق",
+      render: (e) => (
+        <span className="text-muted-foreground">{e.docs}</span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "الإجراءات",
+      render: (e) => (
+        <div className="flex gap-1">
+          <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50 transition-colors">تعديل الدور</button>
+          <button
+            onClick={() => toggleStatus(Number(e.id))}
+            className={`px-2 py-1 rounded border text-xs hover:bg-secondary/50 transition-colors ${e.status === "نشط" ? "text-[hsl(var(--status-red-text))]" : "text-primary"}`}
+          >
+            {e.status === "نشط" ? "تعطيل" : "تفعيل"}
+          </button>
+        </div>
+      ),
+    },
 
+
+  ]
   return (
     <div className="space-y-6">
       {/* Table Section */}
       <div className="bg-card rounded-lg border shadow-sm">
         <div className="p-5 border-b flex items-center justify-between">
           <h4 className="font-bold">الموظفون</h4>
-          <button 
-            onClick={() => setDrawerOpen(true)} 
+          <button
+            onClick={() => setDrawerOpen(true)}
             className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1.5 hover:opacity-90 transition-opacity"
           >
             <Plus className="w-4 h-4" /> إضافة موظف جديد
           </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-secondary/50 text-muted-foreground text-xs">
-                <th className="text-right p-3 font-medium">الموظف</th>
-                <th className="text-right p-3 font-medium">اسم المستخدم</th>
-                <th className="text-right p-3 font-medium">الدور</th>
-                <th className="text-right p-3 font-medium">حالة الحساب</th>
-                <th className="text-right p-3 font-medium">واقعات اليوم</th>
-                <th className="text-right p-3 font-medium">وثائق اليوم</th>
-                <th className="text-right p-3 font-medium">خيارات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((e, i) => (
-                <tr key={i} className={`border-t hover:bg-secondary/20 transition-colors ${i % 2 === 1 ? "bg-secondary/10" : ""}`}>
-                  <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
-                        {e.name.charAt(0)}
-                      </div>
-                      <span className="font-medium">{e.name}</span>
-                    </div>
-                  </td>
-                  <td className="p-3 font-mono text-xs text-muted-foreground">{e.username}</td>
-                  <td className="p-3"><span className={roleBadge(e.role)}>{e.role}</span></td>
-                  <td className="p-3"><span className={e.status === "نشط" ? "badge-active" : "badge-danger"}>{e.status}</span></td>
-                  <td className="p-3 text-center">{e.events}</td>
-                  <td className="p-3 text-center">{e.docs}</td>
-                  <td className="p-3">
-                    <div className="flex gap-1">
-                      <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50 transition-colors">تعديل الدور</button>
-                      <button 
-                        onClick={() => toggleStatus(i)}
-                        className={`px-2 py-1 rounded border text-xs hover:bg-secondary/50 transition-colors ${e.status === "نشط" ? "text-[hsl(var(--status-red-text))]" : "text-primary"}`}
-                      >
-                        {e.status === "نشط" ? "تعطيل" : "تفعيل"}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable columns={columns} data={employees} />
       </div>
 
       {/* Drawer */}
@@ -99,8 +115,8 @@ export default function EmployeeManager({ initialEmployees }: EmployeeManagerPro
           <div className="w-full max-w-md bg-card shadow-xl border-r overflow-y-auto animate-in slide-in-from-left duration-300">
             <div className="p-6 border-b flex items-center justify-between">
               <h3 className="text-lg font-bold">إضافة موظف جديد</h3>
-              <button 
-                onClick={() => setDrawerOpen(false)} 
+              <button
+                onClick={() => setDrawerOpen(false)}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -119,7 +135,7 @@ export default function EmployeeManager({ initialEmployees }: EmployeeManagerPro
                   <option>مدير</option>
                 </select>
               </div>
-              <button 
+              <button
                 className="w-full h-11 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 mt-4 transition-opacity shadow-lg shadow-primary/20"
               >
                 إنشاء الحساب
@@ -136,9 +152,9 @@ function InputField({ label, placeholder }: { label: string; placeholder: string
   return (
     <div>
       <label className="block text-xs text-muted-foreground mb-1.5">{label}</label>
-      <input 
-        className="w-full h-10 px-3 rounded-md border bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-all" 
-        placeholder={placeholder} 
+      <input
+        className="w-full h-10 px-3 rounded-md border bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-all"
+        placeholder={placeholder}
       />
     </div>
   );

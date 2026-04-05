@@ -1,4 +1,6 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Column, DataTable } from "@/components/DataTable";
+import { IAuditLog } from "@/types";
+import { AuditFilters } from "@/components/AuditFilters";
 
 const logs = [
   { date: "٢٠/١١/٢٠٢٤ ١٠:٣٢", employee: "م. أحمد الخالدي", action: "أصدر وثيقة", table: "documents", record: "DOC-2024-00187", oldVal: "—", newVal: '{"type":"سند إقامة"}' },
@@ -18,95 +20,66 @@ const actionBadge = (a: string) => {
   if (a === "رفض") return "badge-danger";
   return "badge-gray";
 };
+const columns: Column<IAuditLog>[] = [
+  {
+    key: "date",
+    header: "التاريخ والوقت",
+    render: (e) => (
+      <span className="font-mono text-xs text-muted-foreground whitespace-nowrap">{e.date}</span>
+    ),
+  },
+  {
+    key: "employee",
+    header: "الموظف",
+    render: (e) => (
+      <span >{e.employee}</span>
+    ),
+  },
+  {
+    key: "action",
+    header: "الإجراء",
+    render: (e) => (
+      <span className={actionBadge(e.action)}>{e.action}</span>
+    ),
+  },
+  {
+    key: "table",
+    header: "الجدول",
+    render: (e) => (
+      <span className="font-mono text-xs text-muted-foreground">{e.table}</span>
+    ),
+  },
+  {
+    key: "record",
+    header: "السجل",
+    render: (e) => (
+      <span className="font-mono text-xs text-muted-foreground">{e.record}</span>
+    ),
+  },
+  {
+    key: "oldVal",
+    header: "القيمة القديمة",
+    render: (e) => (
+      <span className="text-xs text-muted-foreground font-mono truncate block max-w-30" title={e.oldVal}>{e.oldVal}</span>
+    ),
+  },
+  {
+    key: "newVal",
+    header: "القيمة الجديدة",
+    render: (e) => (
+      <span className="text-xs text-muted-foreground font-mono truncate block max-w-30" title={e.newVal}>{e.newVal}</span>
+    ),
+  },
+]
 
 export default function AuditLog() {
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <div className="bg-card rounded-lg border p-5 shadow-sm flex flex-wrap gap-3 items-end">
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1.5">من تاريخ</label>
-          <input type="text" placeholder="يوم/شهر/سنة" className="h-9 px-3 rounded-md border bg-background text-sm w-36" />
-        </div>
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1.5">إلى تاريخ</label>
-          <input type="text" placeholder="يوم/شهر/سنة" className="h-9 px-3 rounded-md border bg-background text-sm w-36" />
-        </div>
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1.5">الموظف</label>
-          <select className="h-9 px-3 rounded-md border bg-background text-sm">
-            <option>جميع الموظفين</option>
-            <option>م. أحمد الخالدي</option>
-            <option>سارة الحسن</option>
-            <option>نور العلي</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1.5">نوع الإجراء</label>
-          <select className="h-9 px-3 rounded-md border bg-background text-sm">
-            <option>الكل</option>
-            <option>أضاف مواطن</option>
-            <option>عدّل بيانات</option>
-            <option>أصدر وثيقة</option>
-            <option>سجّل واقعة</option>
-            <option>وافق</option>
-            <option>رفض</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1.5">الجدول المتأثر</label>
-          <select className="h-9 px-3 rounded-md border bg-background text-sm">
-            <option>الكل</option>
-            <option>citizens</option>
-            <option>civil_events</option>
-            <option>documents</option>
-          </select>
-        </div>
-        <button className="h-9 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90">تطبيق الفلترة</button>
-      </div>
+      <AuditFilters />
 
       {/* Table */}
-      <div className="bg-card rounded-lg border shadow-sm overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-secondary/50 text-muted-foreground text-xs">
-              <th className="text-right p-3 font-medium">التاريخ والوقت</th>
-              <th className="text-right p-3 font-medium">الموظف</th>
-              <th className="text-right p-3 font-medium">الإجراء</th>
-              <th className="text-right p-3 font-medium">الجدول</th>
-              <th className="text-right p-3 font-medium">السجل</th>
-              <th className="text-right p-3 font-medium">القيمة القديمة</th>
-              <th className="text-right p-3 font-medium">القيمة الجديدة</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((l, i) => (
-              <tr key={i} className={`border-t ${i % 2 === 1 ? "bg-secondary/10" : ""}`}>
-                <td className="p-3 font-mono text-xs text-muted-foreground whitespace-nowrap">{l.date}</td>
-                <td className="p-3">{l.employee}</td>
-                <td className="p-3"><span className={actionBadge(l.action)}>{l.action}</span></td>
-                <td className="p-3 font-mono text-xs text-muted-foreground">{l.table}</td>
-                <td className="p-3 font-mono text-xs text-muted-foreground">{l.record}</td>
-                <td className="p-3">
-                  <span className="text-xs text-muted-foreground font-mono truncate block max-w-[120px]" title={l.oldVal}>{l.oldVal}</span>
-                </td>
-                <td className="p-3">
-                  <span className="text-xs text-muted-foreground font-mono truncate block max-w-[120px]" title={l.newVal}>{l.newVal}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground">
-          <span>عرض ١–٥٠ من أصل ١٬٢٣٤ سجل</span>
-          <div className="flex items-center gap-1">
-            <button className="w-8 h-8 rounded border flex items-center justify-center hover:bg-secondary/50"><ChevronRight className="w-4 h-4" /></button>
-            <button className="w-8 h-8 rounded border bg-primary text-primary-foreground flex items-center justify-center">١</button>
-            <button className="w-8 h-8 rounded border flex items-center justify-center hover:bg-secondary/50">٢</button>
-            <button className="w-8 h-8 rounded border flex items-center justify-center hover:bg-secondary/50">٣</button>
-            <button className="w-8 h-8 rounded border flex items-center justify-center hover:bg-secondary/50"><ChevronLeft className="w-4 h-4" /></button>
-          </div>
-        </div>
+      <div className="bg-card rounded-lg border shadow-sm">
+        <DataTable columns={columns} data={logs} />
       </div>
     </div>
   );

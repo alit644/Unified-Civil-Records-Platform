@@ -1,5 +1,5 @@
-import EventStats from "../../../components/EventStats";
-import EventContent from "../../../components/EventContent";
+import EventContent from "./_components/EventContent";
+import EventStats from "./_components/EventStats";
 
 const events = [
   { id: "CE-2024-001", type: "ولادة", citizen: "ليان محمد العبادي", eventDate: "٢٠/١١/٢٠٢٤", regDate: "٢٠/١١/٢٠٢٤", deadline: "٢٠/١٢/٢٠٢٤", status: "بانتظار التدقيق" },
