@@ -1,6 +1,9 @@
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import {  ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import CitizenActions from "../../../components/CitizenActions";
+import CitizenActions from "./_components/CitizenActions";
+import { Column, DataTable } from "@/components/DataTable";
+import { Citizen } from "@/types";
+import SearchBar from "./_components/SearchBar";
 
 
 const citizens = [
@@ -20,46 +23,89 @@ const statusBadge = (s: string) => {
   return "badge-gray";
 };
 
+  const columns: Column<Citizen>[] = [
+    {
+      key: "name",
+      header: "الاسم الكامل",
+      render: (c) => (
+        <span className="font-medium ">
+          {c.name}
+        </span>
+      ),
+    },
+    {
+      key: "nid",
+      header: "الرقم الوطني",
+      render: (c) => (
+        <span className="font-mono text-xs
+        text-muted-foreground">
+          {c.nid}
+        </span>
+      ),
+    },
+    {
+      key: "gender",
+      header: "الجنس",
+      render: (c) => (
+        <span >
+          {c.gender}
+        </span>
+      ),
+    },
+    {
+      key: "neighborhood",
+      header: "الحي",
+      render: (c) => (
+        <span >
+          {c.neighborhood}
+        </span>
+      ),
+    },
+    {
+      key: "marital",
+      header: "الحالة المدنية",
+      render: (c) => (
+        <span >
+          {c.marital}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: "حالة السجل",
+      render: (c) => (
+        <span className={statusBadge(c.status)}>{c.status}</span>
+      ),
+    },
+    {
+      key: "updated",
+      header: "آخر تحديث",
+      render: (c) => (
+        <span className="text-muted-foreground">
+          {c.updated}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "خيارات",
+      render: (c) => (
+        <div className="flex gap-1">
+          <Link href="/citizens/1" className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">عرض</Link>
+          <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">تعديل</button>
+          <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">إصدار وثيقة</button>
+        </div>
+      ),
+    },
+  ]
+
 
 export default function CitizenSearch() {
+
   return (
     <div className="space-y-6">
-      {/* Search bar */}
-      <div className="bg-card rounded-lg border p-5 shadow-sm">
-        <div className="flex flex-wrap gap-3 items-end">
-          <div className="flex-1 min-w-[280px]">
-            <label className="block text-xs text-muted-foreground mb-1.5">بحث</label>
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                placeholder="ابحث بالاسم الكامل أو الرقم الوطني أو رقم دفتر العائلة..."
-                className="w-full h-10 pr-10 pl-4 rounded-md border bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1.5">الحي</label>
-            <select className="h-10 px-3 rounded-md border bg-background text-sm">
-              <option>الكل</option>
-              <option>الجبيهة</option>
-              <option>الرابية</option>
-              <option>صويلح</option>
-              <option>الجندويل</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1.5">الحالة</label>
-            <select className="h-10 px-3 rounded-md border bg-background text-sm">
-              <option>الكل</option>
-              <option>نشط</option>
-              <option>بانتظار التدقيق</option>
-              <option>متوفى</option>
-            </select>
-          </div>
-          <button className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90">بحث</button>
-          <button className="h-10 px-4 rounded-md border text-sm text-muted-foreground hover:bg-secondary/50">إعادة تعيين</button>
-        </div>
-      </div>
+      {/* Search Bar */}
+    <SearchBar />
 
       {/* Results */}
       <div className="bg-card rounded-lg border shadow-sm">
@@ -69,42 +115,12 @@ export default function CitizenSearch() {
           <CitizenActions citizens={citizens} />
         </div>
         {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-secondary/50 text-muted-foreground text-xs">
-                <th className="text-right p-3 font-medium">الاسم الكامل</th>
-                <th className="text-right p-3 font-medium">الرقم الوطني</th>
-                <th className="text-right p-3 font-medium">الجنس</th>
-                <th className="text-right p-3 font-medium">الحي</th>
-                <th className="text-right p-3 font-medium">الحالة المدنية</th>
-                <th className="text-right p-3 font-medium">حالة السجل</th>
-                <th className="text-right p-3 font-medium">آخر تحديث</th>
-                <th className="text-right p-3 font-medium">خيارات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {citizens.map((c, i) => (
-                <tr key={i} className={`border-t hover:bg-secondary/20 ${i % 2 === 1 ? "bg-secondary/10" : ""}`} style={{ height: 56 }}>
-                  <td className="p-3 font-medium">{c.name}</td>
-                  <td className="p-3 text-muted-foreground font-mono text-xs">{c.nid}</td>
-                  <td className="p-3">{c.gender}</td>
-                  <td className="p-3">{c.neighborhood}</td>
-                  <td className="p-3">{c.marital}</td>
-                  <td className="p-3"><span className={statusBadge(c.status)}>{c.status}</span></td>
-                  <td className="p-3 text-muted-foreground">{c.updated}</td>
-                  <td className="p-3">
-                    <div className="flex gap-1">
-                      <Link href="/citizens/1" className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">عرض</Link>
-                      <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">تعديل</button>
-                      <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">إصدار وثيقة</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={columns}
+          data={citizens}
+          rowHeight={56}
+          hoverable
+        />
         {/* pagination */}
         <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground">
           <span>عرض ١–٧ من أصل ١٢٤٬٨٥٦ مواطن</span>

@@ -1,4 +1,5 @@
-import DocumentManager from "../../../components/DocumentManager";
+import DocumentManager from "./_components/DocumentManager";
+
 
 const recentDocs = [
   { type: "سند إقامة", citizen: "محمد سامر الشمري", nid: "٩٩٨١٢٣٤٥٦٧", time: "١٠:٣٢", employee: "م. أحمد" },
@@ -8,6 +9,7 @@ const recentDocs = [
 ];
 
 export default function DocumentIssuancePage() {
+
   return (
     <div className="space-y-6">
       <DocumentManager recentDocs={recentDocs} />

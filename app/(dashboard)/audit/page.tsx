@@ -1,3 +1,5 @@
+import { Column, DataTable } from "@/components/DataTable";
+import { IAuditLog } from "@/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const logs = [
@@ -18,6 +20,57 @@ const actionBadge = (a: string) => {
   if (a === "رفض") return "badge-danger";
   return "badge-gray";
 };
+const columns: Column<IAuditLog>[] = [
+  {
+    key: "date",
+    header: "التاريخ والوقت",
+    render: (e) => (
+      <span className="font-mono text-xs text-muted-foreground whitespace-nowrap">{e.date}</span>
+    ),
+  },
+  {
+    key: "employee",
+    header: "الموظف",
+    render: (e) => (
+      <span >{e.employee}</span>
+    ),
+  },
+  {
+    key: "action",
+    header: "الإجراء",
+    render: (e) => (
+      <span className={actionBadge(e.action)}>{e.action}</span>
+    ),
+  },
+  {
+    key: "table",
+    header: "الجدول",
+    render: (e) => (
+      <span className="font-mono text-xs text-muted-foreground">{e.table}</span>
+    ),
+  },
+  {
+    key: "record",
+    header: "السجل",
+    render: (e) => (
+      <span className="font-mono text-xs text-muted-foreground">{e.record}</span>
+    ),
+  },
+  {
+    key: "oldVal",
+    header: "القيمة القديمة",
+    render: (e) => (
+      <span className="text-xs text-muted-foreground font-mono truncate block max-w-[120px]" title={e.oldVal}>{e.oldVal}</span>
+    ),
+  },
+  {
+    key: "newVal",
+    header: "القيمة الجديدة",
+    render: (e) => (
+      <span className="text-xs text-muted-foreground font-mono truncate block max-w-[120px]" title={e.newVal}>{e.newVal}</span>
+    ),
+  },
+]
 
 export default function AuditLog() {
   return (
@@ -66,47 +119,8 @@ export default function AuditLog() {
       </div>
 
       {/* Table */}
-      <div className="bg-card rounded-lg border shadow-sm overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-secondary/50 text-muted-foreground text-xs">
-              <th className="text-right p-3 font-medium">التاريخ والوقت</th>
-              <th className="text-right p-3 font-medium">الموظف</th>
-              <th className="text-right p-3 font-medium">الإجراء</th>
-              <th className="text-right p-3 font-medium">الجدول</th>
-              <th className="text-right p-3 font-medium">السجل</th>
-              <th className="text-right p-3 font-medium">القيمة القديمة</th>
-              <th className="text-right p-3 font-medium">القيمة الجديدة</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.map((l, i) => (
-              <tr key={i} className={`border-t ${i % 2 === 1 ? "bg-secondary/10" : ""}`}>
-                <td className="p-3 font-mono text-xs text-muted-foreground whitespace-nowrap">{l.date}</td>
-                <td className="p-3">{l.employee}</td>
-                <td className="p-3"><span className={actionBadge(l.action)}>{l.action}</span></td>
-                <td className="p-3 font-mono text-xs text-muted-foreground">{l.table}</td>
-                <td className="p-3 font-mono text-xs text-muted-foreground">{l.record}</td>
-                <td className="p-3">
-                  <span className="text-xs text-muted-foreground font-mono truncate block max-w-[120px]" title={l.oldVal}>{l.oldVal}</span>
-                </td>
-                <td className="p-3">
-                  <span className="text-xs text-muted-foreground font-mono truncate block max-w-[120px]" title={l.newVal}>{l.newVal}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground">
-          <span>عرض ١–٥٠ من أصل ١٬٢٣٤ سجل</span>
-          <div className="flex items-center gap-1">
-            <button className="w-8 h-8 rounded border flex items-center justify-center hover:bg-secondary/50"><ChevronRight className="w-4 h-4" /></button>
-            <button className="w-8 h-8 rounded border bg-primary text-primary-foreground flex items-center justify-center">١</button>
-            <button className="w-8 h-8 rounded border flex items-center justify-center hover:bg-secondary/50">٢</button>
-            <button className="w-8 h-8 rounded border flex items-center justify-center hover:bg-secondary/50">٣</button>
-            <button className="w-8 h-8 rounded border flex items-center justify-center hover:bg-secondary/50"><ChevronLeft className="w-4 h-4" /></button>
-          </div>
-        </div>
+      <div className="bg-card rounded-lg border shadow-sm">
+        <DataTable columns={columns} data={logs} />
       </div>
     </div>
   );
