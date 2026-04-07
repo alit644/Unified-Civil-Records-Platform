@@ -1,3 +1,5 @@
+import { Role } from "@/lib/generated/prisma/enums";
+
 export interface Citizen {
   name: string;
   nid: string;
@@ -46,11 +48,13 @@ export interface Archive {
 export interface Employee {
   id: string;
   name: string;
-  username: string;
-  role: string;
-  status: string;
-  events: string;
-  docs: string;
+  email: string;
+  role: Role;
+  isActive: boolean;
+  _count: {
+    documents: number;
+    civilEvents: number;
+  }
 }
 
 export interface IAuditLog {
