@@ -2,8 +2,12 @@ import { metricsData } from "@/components/data";
 import { Column, DataTable } from "@/components/DataTable";
 import { MetricCard } from "@/components/MetricCard";
 import QuickActions from "@/components/QuickActions";
+import { auth } from "@/lib/auth";
 import { Event } from "@/types";
-import { ArrowUp, FileText, Users, ClipboardList, AlertCircle } from "lucide-react";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
 
 const recentEvents = [
   { type: "ولادة", citizen: "ليان محمد العبادي", date: "٢٠/١١/٢٠٢٤", status: "مقبول", employee: "سارة الحسن" },
@@ -61,13 +65,24 @@ const columns: Column<Event>[] = [
     ),
   },
 ]
-export default function Dashboard() {
+export default async function Dashboard() {
 
+  // جلب الجلسة باستخدام الـ headers الحالية
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const {user} = session
+  const date = format(new Date(), "EEEE، d MMMM yyyy", { locale: ar })
   return (
     <div className="space-y-6">
       {/* Welcome */}
       <div className="bg-card rounded-lg border p-6">
-        <h3 className="text-lg font-bold">أهلاً بك، م. أحمد — الثلاثاء، ٢٠ نوفمبر ٢٠٢٤</h3>
+        <h3 className="text-lg font-bold">أهلاً بك، {user.name} — {date}</h3>
         <p className="text-muted-foreground text-sm mt-1">لديك ٥ معاملات بانتظار المراجعة</p>
       </div>
 
