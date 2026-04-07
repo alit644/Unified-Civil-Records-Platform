@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { Role } from "@/lib/generated/prisma/enums";
-import { AddEmployeeFormData, addEmployeeSchema } from "@/lib/schema";
+import { AddEmployeeFormData, addEmployeeSchema, EditEmployeeFormData, editEmployeeSchema } from "@/lib/schema";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import bcrypt from "bcryptjs";
 
 export async function addEmployee(data: AddEmployeeFormData) {
   try {
@@ -62,3 +64,118 @@ export async function addEmployee(data: AddEmployeeFormData) {
     }
   }
 }
+
+//! TOGGLE EMPLOYEE STATUS
+export async function toggleEmployeeStatus(id: string) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers()
+    })
+
+    if (!session || session.user.role !== "ADMIN") {
+      return { success: false, message: "غير مصرح لك بتعديل حالة الموظف" };
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: { id },
+    });
+
+    if (!employee) {
+      return { success: false, message: "الموظف غير موجود" };
+    }
+
+    const updatedEmployee = await prisma.employee.update({
+      where: { id },
+      data: { isActive: !employee.isActive },
+    });
+
+    revalidatePath("/employees" , "page");
+    return { success: true, message: `تم ${updatedEmployee.isActive ? "تفعيل" : "تعطيل"} الموظف بنجاح` };
+  } catch (error: any) {
+    console.error("Error toggling employee status:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+//! EDIT EMPLOYEE DETAILS
+export async function editEmployeeDetails(id: string, data: EditEmployeeFormData) {
+  try {
+    const validatedFields = editEmployeeSchema.safeParse(data);
+    if (!validatedFields.success) {
+      return { success: false, message: "بيانات المدخلات غير صالحة" };
+    }
+
+    // التحقق من الصلاحية
+    const session = await auth.api.getSession({
+      headers: await headers()
+    })
+
+    if (!session || session.user.role !== "ADMIN") {
+      return {
+        success: false,
+        message: "غير مصرح لك بتعديل معلومات الموظف"
+      }
+    }
+
+    // التحقق من وجود الموظف
+    const employee = await prisma.employee.findUnique({
+      where: { id }
+    })
+
+    if (!employee) {
+      return {
+        success: false,
+        message: "الموظف غير موجود"
+      }
+    }
+
+    // منع تعديل حالة موظف ADMIN
+    if (employee.role === "ADMIN" && data.isActive !== employee.isActive) {
+      return {
+        success: false,
+        message: "لا يمكن تعديل حالة موظف إداري"
+      }
+    }
+
+    // تحديث بيانات الموظف
+    const updatedEmployee = await prisma.employee.update({
+      where: { id },
+      data: {
+        name: data.name,
+        role: data.role,
+        isActive: data.isActive,
+        email: `${data.username}@civil.gov.sd`
+      },
+    });
+
+    // تحديث كلمة المرور في جدول Account إذا تم إدخال واحدة جديدة
+    if (data.password && data.password.trim()) {
+        // Hash كلمة المرور قبل الحفظ/
+        await auth.api.setPassword({
+          body:{
+            newPassword: data.password,
+          }
+        })
+      
+  
+    }
+
+    revalidatePath("/employees", "page");
+    return {
+      success: true,
+      message: "تم تحديث بيانات الموظف بنجاح"
+    }
+  } catch (error: any) {
+    console.error("Error editing employee details:", error);
+    return {
+      success: false,
+      message: error.message
+    }
+  }
+}
+
+  // const hashedPassword = await bcrypt.hash(data.password, 12);
+        // await prisma.employee.update({
+        //   where: { id: id },
+        //   data: { passwordHash: hashedPassword }
+        // });
