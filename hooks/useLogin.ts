@@ -29,6 +29,7 @@ export const useLogin = () => {
       });
 
       if (result.error) {
+        console.log(result.error)
         let errorMessage = "فشل تسجيل الدخول";
         const errorCode = result.error.code || result.error.statusText || "";
         const errorMsg = result.error.message?.toLowerCase() || "";
