@@ -1,0 +1,176 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Employee {
+  id            String       @id @default(cuid())
+  name          String
+  email         String       @unique
+  passwordHash  String?
+  role          Role         @default(OFFICER)
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  auditLogs     AuditLog[]
+  civilEvents   CivilEvent[]
+  documents     Document[]
+  emailVerified Boolean      @default(false)
+  image         String?
+  updatedAt     DateTime     @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("Employee")
+}
+
+model Citizen {
+  id            String        @id @default(cuid())
+  fullName      String
+  nid           String        @unique
+  familyBookId  String?
+  gender        Gender
+  dob           DateTime
+  neighborhood  String
+  maritalStatus MaritalStatus @default(SINGLE)
+  status        CitizenStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  civilEvents   CivilEvent[]
+  documents     Document[]
+}
+
+model CivilEvent {
+  id               String      @id @default(cuid())
+  eventNumber      String      @unique
+  type             EventType
+  status           EventStatus @default(PENDING)
+  eventDate        DateTime
+  registrationDate DateTime
+  finalDate        DateTime?
+  notes            String?
+  citizenId        String
+  employeeId       String
+  citizen          Citizen     @relation(fields: [citizenId], references: [id])
+  employee         Employee    @relation(fields: [employeeId], references: [id])
+  documents        Document[]
+}
+
+model Document {
+  id            String      @id @default(cuid())
+  archiveNumber String      @unique
+  type          String
+  fileUrl       String?
+  fileSize      Int?
+  issuedAt      DateTime    @default(now())
+  citizenId     String
+  eventId       String?
+  employeeId    String
+  citizen       Citizen     @relation(fields: [citizenId], references: [id])
+  employee      Employee    @relation(fields: [employeeId], references: [id])
+  event         CivilEvent? @relation(fields: [eventId], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  tableName  String
+  recordId   String
+  oldData    Json?
+  newData    Json?
+  createdAt  DateTime @default(now())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  OFFICER
+  AUDITOR
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum CitizenStatus {
+  ACTIVE
+  PENDING
+  DECEASED
+  INACTIVE
+}
+
+enum EventType {
+  BIRTH
+  MARRIAGE
+  DIVORCE
+  DEATH
+}
+
+enum EventStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Tables for better-auth
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  employee  Employee @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  employee              Employee  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
