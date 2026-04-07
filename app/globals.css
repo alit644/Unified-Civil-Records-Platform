@@ -89,6 +89,8 @@
     --status-orange-text: 21 90% 35%;
     --status-gray-bg: 220 14% 92%;
     --status-gray-text: 220 9% 35%;
+    --status-purple-bg: 264 87% 92%;
+    --status-purple-text: 264 87% 35%;
   }
 }
 
@@ -131,6 +133,11 @@
     @apply px-3 py-1 rounded-full text-xs font-medium;
     background: hsl(var(--status-orange-bg));
     color: hsl(var(--status-orange-text));
+  }
+  .badge-purple {
+    @apply px-3 py-1 rounded-full text-xs font-medium;
+    background: hsl(var(--status-purple-bg));
+    color: hsl(var(--status-purple-text));
   }
   .badge-gray {
     @apply px-3 py-1 rounded-full text-xs font-medium;
