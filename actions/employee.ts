@@ -7,7 +7,7 @@ import { Role } from "@/lib/generated/prisma/enums";
 import { AddEmployeeFormData, addEmployeeSchema, EditEmployeeFormData, editEmployeeSchema } from "@/lib/schema";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "better-auth/crypto";
 
 export async function addEmployee(data: AddEmployeeFormData) {
   try {
@@ -148,16 +148,18 @@ export async function editEmployeeDetails(id: string, data: EditEmployeeFormData
       },
     });
 
-    // تحديث كلمة المرور في جدول Account إذا تم إدخال واحدة جديدة
+    // تحديث كلمة المرور مباشرة عبر Prisma بدون الحاجة للكلمة القديمة
     if (data.password && data.password.trim()) {
-        // Hash كلمة المرور قبل الحفظ/
-        await auth.api.setPassword({
-          body:{
-            newPassword: data.password,
-          }
-        })
-      
-  
+      const hashedPassword = await hashPassword(data.password);
+      await prisma.account.updateMany({
+        where: {
+          userId: id,
+          providerId: "credential",
+        },
+        data: {
+          password: hashedPassword,
+        },
+      });
     }
 
     revalidatePath("/employees", "page");
@@ -174,8 +176,3 @@ export async function editEmployeeDetails(id: string, data: EditEmployeeFormData
   }
 }
 
-  // const hashedPassword = await bcrypt.hash(data.password, 12);
-        // await prisma.employee.update({
-        //   where: { id: id },
-        //   data: { passwordHash: hashedPassword }
-        // });
