@@ -1,5 +1,5 @@
 "use client";
-import { Lock, Shield, User } from "lucide-react";
+import { Loader2, Lock, Shield, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import { Employee } from "@/types";
@@ -27,6 +27,7 @@ import RHFField from "@/components/FormFieldWrapper";
 import { EditEmployeeFormData, editEmployeeSchema } from "@/lib/schema";
 import { notify } from "@/lib/notify";
 import { editEmployeeDetails } from "@/actions/employee";
+import { useRouter } from "next/navigation";
 
 interface EditEmployeeDrawerProps {
   open?: boolean;
@@ -39,6 +40,7 @@ export default function EditEmployeeDrawer({
   onClose,
   selectedEmployee,
 }: EditEmployeeDrawerProps) {
+    const router = useRouter(); 
   const form = useForm<EditEmployeeFormData>({
     resolver: zodResolver(editEmployeeSchema),
     defaultValues: {
@@ -57,7 +59,8 @@ export default function EditEmployeeDrawer({
         } else {
           notify(result.message, "success");
           form.reset();
-          // onClose();
+          router.refresh();
+          onClose?.();
         }
     
     };
@@ -184,9 +187,13 @@ export default function EditEmployeeDrawer({
           <DrawerFooter className="px-0 pt-0">
             <Button
               type="submit"
+              disabled={form.formState.isSubmitting || !form.formState.isValid}
               className="h-11 w-full shadow-lg shadow-primary/20"
             >
-              حفظ التعديلات
+            {form.formState.isSubmitting ? <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="ml-2">جاري الحفظ...</span>
+            </> : "حفظ التعديلات"}
             </Button>
             <DrawerClose asChild>
               <Button

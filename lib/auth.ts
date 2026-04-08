@@ -40,5 +40,5 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // 5 minutes
     },
   },
-  plugins: [admin()],
+  plugins: [admin({ adminRoles: ["ADMIN"] })],
 });
