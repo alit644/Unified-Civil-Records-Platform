@@ -11,12 +11,12 @@ const LogOut = () => {
   const handleLogOut = async () => {
     try {
       setIsLoggingOut(true);
-      
+
       await authClient.signOut({
         fetchOptions: {
           onSuccess: () => {
-            router.refresh(); 
-            router.push("/login");
+            router.refresh();
+            router.replace("/login");
           },
         },
       });
@@ -28,9 +28,9 @@ const LogOut = () => {
   };
 
   return (
-  <Button 
-      variant="ghost" 
-      size="icon" 
+    <Button
+      variant="ghost"
+      size="icon"
       className="text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-destructive/10 transition-colors"
       onClick={handleLogOut}
       disabled={isLoggingOut}

@@ -8,6 +8,7 @@ import { Role } from "@/lib/generated/prisma/enums";
 import { useToggleEmployeeStatus } from "@/hooks/useToggleEmployeeStatus";
 import AddEmployeeDrawer from "./AddEmployeeDrawer";
 import EditEmployeeDrawer from "./EditEmployeeDrawer";
+import MPagination from "@/components/shared/MPagination";
 
 const roleBadge = (r: Role) => {
   if (r === Role.ADMIN) return "badge-blue";
@@ -17,7 +18,7 @@ const roleBadge = (r: Role) => {
 };
 
 const roleLabel: Record<Role, string> = {
-  [Role.ADMIN]: "مشرف",
+[Role.ADMIN]: "مشرف",
   [Role.OFFICER]: "مدخل بيانات",
   [Role.AUDITOR]: "مدقق",
 };
@@ -31,7 +32,9 @@ export default function EmployeeManager({
 }: EmployeeManagerProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editDrawerOpen, setEditDrawerOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+    null,
+  );
   const [employees, setEmployees] = useState(initialEmployees);
   const { toggleStatus, isPending } = useToggleEmployeeStatus(setEmployees);
 
@@ -39,7 +42,7 @@ export default function EmployeeManager({
     () => [
       {
         key: "name",
-        header: "اسم الموظف",
+       header: "اسم الموظف",
         render: (e) => (
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
@@ -61,30 +64,36 @@ export default function EmployeeManager({
       {
         key: "role",
         header: "الدور",
-        render: (e) => <span className={roleBadge(e.role)}>{roleLabel[e.role]}</span>,
+        render: (e) => (
+          <span className={roleBadge(e.role)}>{roleLabel[e.role]}</span>
+        ),
       },
       {
         key: "status",
         header: "الحالة",
         render: (e) => (
           <span className={e.isActive ? "badge-active" : "badge-danger"}>
-            {e.isActive ? "نشط" : "موقوف"}
+            {e.isActive ? "نشط" : "غير نشط"}
           </span>
         ),
       },
       {
         key: "events",
-        header: "المعاملات",
-        render: (e) => <span className="text-muted-foreground">{e._count.civilEvents}</span>,
+       header: "المعاملات",
+        render: (e) => (
+          <span className="text-muted-foreground">{e._count.civilEvents}</span>
+        ),
       },
       {
         key: "docs",
         header: "الوثائق",
-        render: (e) => <span className="text-muted-foreground">{e._count.documents}</span>,
+        render: (e) => (
+          <span className="text-muted-foreground">{e._count.documents}</span>
+        ),
       },
       {
         key: "actions",
-        header: "الإجراءات",
+         header: "الإجراءات",
         render: (e) => (
           <div className="flex gap-1">
             <button
@@ -94,13 +103,15 @@ export default function EmployeeManager({
               }}
               className="rounded border px-2 py-1 text-xs transition-colors hover:bg-secondary/50"
             >
-              تعديل الدور
+             تعديل الدور
             </button>
             <button
               onClick={() => toggleStatus(e.id, e.isActive)}
               disabled={e.role === "ADMIN" || isPending}
               className={`rounded border px-2 py-1 text-xs transition-colors hover:bg-secondary/50 disabled:cursor-not-allowed disabled:opacity-50 ${
-                e.isActive ? "text-[hsl(var(--status-red-text))]" : "text-primary"
+                e.isActive
+                  ? "text-[hsl(var(--status-red-text))]"
+                  : "text-primary"
               }`}
             >
               {e.isActive ? "تعطيل" : "تفعيل"}
@@ -109,25 +120,37 @@ export default function EmployeeManager({
         ),
       },
     ],
-    [isPending, toggleStatus]
+    [isPending, toggleStatus],
   );
 
   return (
     <div className="space-y-6">
       <div className="rounded-lg border bg-card shadow-sm">
         <div className="flex items-center justify-between border-b p-5">
-          <h4 className="font-bold">الموظفون</h4>
+          <h4 className="font-bold">إدارة الموظفين</h4>
           <button
             onClick={() => setDrawerOpen(true)}
+            type="button"
+            aria-label="إضافة موظف جديد"
             className="flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
           >
             <Plus className="h-4 w-4" /> إضافة موظف جديد
           </button>
         </div>
-        <DataTable columns={columns} data={employees} />
+        <DataTable
+          columns={columns}
+          data={employees}
+        />
+        <MPagination totalPages={10} currentPage={1} onPageChange={() => 5}/>
       </div>
 
-      <AddEmployeeDrawer onClose={() => setDrawerOpen(false)} open={drawerOpen} />
+      <AddEmployeeDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onAdded={(employee) => {
+          setEmployees((current) => [employee, ...current]);
+        }}
+      />
       {selectedEmployee ? (
         <EditEmployeeDrawer
           open={editDrawerOpen}

@@ -25,13 +25,19 @@ import {
 import { AddEmployeeFormData, addEmployeeSchema } from "@/lib/schema";
 import { addEmployee } from "@/actions/employee";
 import { notify } from "@/lib/notify";
+import { Employee } from "@/types";
 
 interface AddEmployeeDrawerProps {
   open: boolean;
   onClose: () => void;
+  onAdded?: (employee: Employee) => void;
 }
 
-export default function AddEmployeeDrawer({ open, onClose }: AddEmployeeDrawerProps) {
+export default function AddEmployeeDrawer({
+  open,
+  onClose,
+  onAdded,
+}: AddEmployeeDrawerProps) {
   const form = useForm<AddEmployeeFormData>({
     resolver: zodResolver(addEmployeeSchema),
     defaultValues: {
@@ -48,6 +54,9 @@ export default function AddEmployeeDrawer({ open, onClose }: AddEmployeeDrawerPr
       notify(result.message, "error");
     } else {
       notify(result.message, "success");
+      if (result.employee) {
+        onAdded?.(result.employee);
+      }
       form.reset();
       onClose();
     }
@@ -62,7 +71,7 @@ export default function AddEmployeeDrawer({ open, onClose }: AddEmployeeDrawerPr
     <Drawer open={open} onClose={handleClose} direction="right">
       <DrawerContent className="max-w-md px-6 py-4 overflow-y-auto">
         <DrawerHeader className="px-0 border-b mb-4">
-          <DrawerTitle className="text-lg font-bold">إضافة موظف جديد</DrawerTitle>
+             <DrawerTitle className="text-lg font-bold">إضافة موظف جديد</DrawerTitle>
         </DrawerHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -78,7 +87,7 @@ export default function AddEmployeeDrawer({ open, onClose }: AddEmployeeDrawerPr
                     {...field}
                     id="name"
                     type="text"
-                    placeholder="أدخل اسم الموظف"
+                   placeholder="أدخل اسم الموظف"
                     className="pr-10 h-11 text-sm"
                     aria-invalid={fieldState.invalid}
                   />
@@ -96,7 +105,7 @@ export default function AddEmployeeDrawer({ open, onClose }: AddEmployeeDrawerPr
                     {...field}
                     id="username"
                     type="text"
-                    placeholder="أدخل اسم المستخدم"
+                      placeholder="أدخل اسم المستخدم"
                     className="pr-10 h-11 text-sm"
                     autoComplete="username"
                     aria-invalid={fieldState.invalid}
@@ -115,7 +124,7 @@ export default function AddEmployeeDrawer({ open, onClose }: AddEmployeeDrawerPr
                     {...field}
                     id="password"
                     type="password"
-                    placeholder="أدخل كلمة مرور مؤقتة"
+                     placeholder="أدخل كلمة مرور مؤقتة"
                     className="pr-10 h-11 text-sm"
                     autoComplete="new-password"
                     aria-invalid={fieldState.invalid}

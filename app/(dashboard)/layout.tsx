@@ -79,7 +79,7 @@ export default function DashboardLayout({
   // get session
   const { data: session, isPending } = authClient.useSession();
   const userName = session?.user?.name;
-  const userRole = (session?.user as IUser)?.role as Role;
+  const  userRole = session?.user?.role as Role;
   const splitName = userName?.split(" ")[0]?.charAt(0)
   const pageTitle = pageTitles[pathname] || "السجل المدني";
   if (isPending) return <div className="p-4">جاري التحميل...</div>;
