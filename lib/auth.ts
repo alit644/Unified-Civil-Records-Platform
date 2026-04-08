@@ -1,7 +1,8 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { admin } from "better-auth/plugins";
+import { adminAc, userAc } from "better-auth/plugins/admin/access";
 import prisma from "./db";
-import { admin } from "better-auth/plugins"
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -40,5 +41,15 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // 5 minutes
     },
   },
-  plugins: [admin({ adminRoles: ["ADMIN"] })],
+  plugins: [
+    admin({
+      adminRoles: ["ADMIN"],
+      defaultRole: "OFFICER",
+      roles: {
+        ADMIN: adminAc,
+        OFFICER: userAc,
+        AUDITOR: userAc,
+      },
+    }),
+  ],
 });

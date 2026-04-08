@@ -154,7 +154,7 @@ export default function AddEmployeeDrawer({ open, onClose }: AddEmployeeDrawerPr
               {form.formState.isSubmitting ? "جاري الإضافة..." : "إنشاء الحساب"}
             </Button>
             <DrawerClose asChild>
-              <Button type="button" variant="outline" className="w-full h-11" onClick={handleClose}>
+              <Button disabled={form.formState.isSubmitting} type="button" variant="outline" className="w-full h-11" onClick={handleClose}>
                 إلغاء
               </Button>
             </DrawerClose>
