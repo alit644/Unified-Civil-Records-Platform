@@ -5,7 +5,7 @@ import { startOfDay } from "date-fns";
 
 
 //TODO: add pagination and search functionality to employee management page
-//TODO: اضافة لسجل النشاظات عند تعديل و اضافة موظف جديد 
+//TODO: عرض جدول الارشيف + جعل تصميم متجاوب 
 
 export default async function EmployeeManagementPage() {
   const todayStart = startOfDay(new Date());

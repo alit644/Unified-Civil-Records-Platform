@@ -63,7 +63,7 @@ export async function addEmployee(data: AddEmployeeFormData) {
         documents: 0,
         civilEvents: 0,
       }
-    };
+    } as any;
 
     // 3. إضافة السجل
     await createAuditLog({
