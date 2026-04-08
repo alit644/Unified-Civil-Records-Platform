@@ -129,6 +129,7 @@ export default function DigitalArchive() {
       </div>
       {/* Table */}
       <div className="bg-card rounded-lg border shadow-sm">
+          
         <DataTable data={archives} columns={columns} />
       </div>
     </div>

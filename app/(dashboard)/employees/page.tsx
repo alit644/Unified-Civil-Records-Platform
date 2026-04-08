@@ -3,8 +3,9 @@ import EmployeeManager from "./_components/EmployeeManager";
 import prisma from "@/lib/db";
 import { startOfDay } from "date-fns";
 
-// revalidate page every 2 minutes
-export const revalidate = 120;
+
+//TODO: add pagination and search functionality to employee management page
+//TODO: اضافة لسجل النشاظات عند تعديل و اضافة موظف جديد 
 
 export default async function EmployeeManagementPage() {
   const todayStart = startOfDay(new Date());
@@ -44,9 +45,6 @@ export default async function EmployeeManagementPage() {
     prisma.civilEvent.count({
       where: {
         status: "PENDING",
-        // createdAt:{
-        //   gte: todayStart
-        // }
           registrationDate: {
             gte: todayStart,
           }
@@ -58,6 +56,7 @@ export default async function EmployeeManagementPage() {
     <div className="space-y-6">
       <EmployeeStats activeEmployees={activeEmployees} pendingAudits={pendingAudits} totalEmployees={totalEmployees} />
       <EmployeeManager initialEmployees={employee} />
+    
     </div>
   );
 }

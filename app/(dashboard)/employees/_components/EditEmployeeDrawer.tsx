@@ -33,6 +33,7 @@ interface EditEmployeeDrawerProps {
   open?: boolean;
   onClose?: () => void;
   selectedEmployee: Employee;
+  onEdited?: (employee: Employee) => void;
 }
 
 export default function EditEmployeeDrawer({
@@ -40,7 +41,7 @@ export default function EditEmployeeDrawer({
   onClose,
   selectedEmployee,
 }: EditEmployeeDrawerProps) {
-    const router = useRouter(); 
+  const router = useRouter();
   const form = useForm<EditEmployeeFormData>({
     resolver: zodResolver(editEmployeeSchema),
     defaultValues: {
@@ -52,18 +53,17 @@ export default function EditEmployeeDrawer({
     },
   });
 
-    const onSubmit = async (data: EditEmployeeFormData) => {
-      const result = await editEmployeeDetails(selectedEmployee.id, data);
-        if (!result.success) {
-          notify(result.message, "error");
-        } else {
-          notify(result.message, "success");
-          form.reset();
-          router.refresh();
-          onClose?.();
-        }
-    
-    };
+  const onSubmit = async (data: EditEmployeeFormData) => {
+    const result = await editEmployeeDetails(selectedEmployee.id, data);
+    if (!result.success) {
+      notify(result.message, "error");
+    } else {
+      notify(result.message, "success");
+      form.reset();
+      router.refresh();
+      onClose?.();
+    }
+  };
 
   return (
     <Drawer open={open} onClose={onClose} direction="right">
@@ -155,14 +155,18 @@ export default function EditEmployeeDrawer({
                 </div>
               )}
             />
-              <RHFField
+            <RHFField
               control={form.control}
               name="isActive"
               label="حالة الحساب"
               render={({ field }) => (
                 <div className="relative">
                   <Shield className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-                  <Select value={String(field.value)} onValueChange={(value) => field.onChange(value === "true")} disabled={selectedEmployee.role === "ADMIN"}>
+                  <Select
+                    value={String(field.value)}
+                    onValueChange={(value) => field.onChange(value === "true")}
+                    disabled={selectedEmployee.role === "ADMIN"}
+                  >
                     <SelectTrigger className="w-full pr-10 h-11">
                       <SelectValue placeholder="حالة الحساب" />
                     </SelectTrigger>
@@ -190,10 +194,14 @@ export default function EditEmployeeDrawer({
               disabled={form.formState.isSubmitting || !form.formState.isValid}
               className="h-11 w-full shadow-lg shadow-primary/20"
             >
-            {form.formState.isSubmitting ? <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="ml-2">جاري الحفظ...</span>
-            </> : "حفظ التعديلات"}
+              {form.formState.isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="ml-2">جاري الحفظ...</span>
+                </>
+              ) : (
+                "حفظ التعديلات"
+              )}
             </Button>
             <DrawerClose asChild>
               <Button
