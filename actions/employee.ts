@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
+
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
-import { Role } from "@/lib/generated/prisma/enums";
 import { AddEmployeeFormData, addEmployeeSchema, EditEmployeeFormData, editEmployeeSchema } from "@/lib/schema";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
@@ -41,14 +41,14 @@ export async function addEmployee(data: AddEmployeeFormData) {
       }
     }
 
-    const newUser = await auth.api.signUpEmail({
+    const newUser = await auth.api.createUser({
       body: {
         email: `${data.username}@civil.gov.sd`,
         password: data.password,
         name: data.name,
-        isActive: true,
-        role: data.role as Role,
-      }
+        role: data.role as any,
+      },
+      headers: await headers(),
     })
     console.log(newUser)
     revalidatePath("/employees");
@@ -138,7 +138,7 @@ export async function editEmployeeDetails(id: string, data: EditEmployeeFormData
     }
 
     // تحديث بيانات الموظف
-    const updatedEmployee = await prisma.employee.update({
+     await prisma.employee.update({
       where: { id },
       data: {
         name: data.name,

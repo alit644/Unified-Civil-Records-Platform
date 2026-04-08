@@ -31,8 +31,3 @@ export const EventStatsData = [
   { label: "وفيات هذا الشهر", value: "٢٨", icon: Skull },
 ];
 
-export const EmployeeStatsData = [
-  { icon: Users, label: "إجمالي الموظفين", value: "١٨" },
-  { icon: UserCheck, label: "موظفون نشطون", value: "١٦" },
-  { icon: ClipboardList, label: "طلبات بانتظار التدقيق اليوم", value: "٢٣" },
-];
