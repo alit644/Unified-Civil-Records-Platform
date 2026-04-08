@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { Role } from "@/lib/generated/prisma/enums";
-import { IUser } from "@/types";
 import LogOut from "@/components/LogOut";
 const navItems = [
   {
@@ -86,8 +85,16 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen w-full font-cairo" dir="rtl">
       {/* Sidebar */}
+    {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       <aside
-        className={`fixed top-0 right-0 h-full z-40 flex flex-col transition-all duration-200 bg-sidebar-background ${
+        // 2. تعديل الـ z-index إلى 50 ليكون فوق كل شيء
+        className={`fixed top-0 right-0 h-full z-50 flex flex-col transition-all duration-200 bg-sidebar-background ${
           sidebarOpen ? "w-60" : "w-0 overflow-hidden"
         }`}
       >
@@ -150,8 +157,10 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main */}
-      <div
-        className={`flex-1 flex flex-col transition-all duration-200 ${sidebarOpen ? "mr-60" : "mr-0"}`}
+    <div
+        className={`flex-1 flex flex-col transition-all duration-200 ${
+          sidebarOpen ? "md:mr-60 mr-0" : "mr-0"
+        }`}
       >
         {/* Header */}
         <header className="sticky top-0 z-30 h-16 bg-card border-b flex items-center px-6 gap-4 shadow-sm">
@@ -167,7 +176,7 @@ export default function DashboardLayout({
           </button>
           <h2 className="text-lg font-bold text-foreground">{pageTitle}</h2>
 
-          <div className="flex-1 max-w-md mx-auto">
+          <div className="flex-1 max-w-md mx-auto hidden sm:block">
             <div className="relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input

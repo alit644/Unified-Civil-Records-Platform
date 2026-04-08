@@ -9,19 +9,8 @@ import { useToggleEmployeeStatus } from "@/hooks/useToggleEmployeeStatus";
 import AddEmployeeDrawer from "./AddEmployeeDrawer";
 import EditEmployeeDrawer from "./EditEmployeeDrawer";
 import MPagination from "@/components/shared/MPagination";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
-const roleBadge = (r: Role) => {
-  if (r === Role.ADMIN) return "badge-blue";
-  if (r === Role.OFFICER) return "badge-orange";
-  if (r === Role.AUDITOR) return "badge-purple";
-  return "badge-gray";
-};
-
-const roleLabel: Record<Role, string> = {
-[Role.ADMIN]: "مشرف",
-  [Role.OFFICER]: "مدخل بيانات",
-  [Role.AUDITOR]: "مدقق",
-};
 
 interface EmployeeManagerProps {
   initialEmployees: Employee[];
@@ -65,16 +54,14 @@ export default function EmployeeManager({
         key: "role",
         header: "الدور",
         render: (e) => (
-          <span className={roleBadge(e.role)}>{roleLabel[e.role]}</span>
+          <StatusBadge value={e.role} category="role" />
         ),
       },
       {
         key: "status",
         header: "الحالة",
         render: (e) => (
-          <span className={e.isActive ? "badge-active" : "badge-danger"}>
-            {e.isActive ? "نشط" : "غير نشط"}
-          </span>
+          <StatusBadge value={e.isActive} category="status" className=""/>
         ),
       },
       {
