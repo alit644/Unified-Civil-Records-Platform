@@ -79,6 +79,7 @@ export async function addEmployee(data: AddEmployeeFormData) {
     });
 
     revalidatePath("/employees");
+    revalidatePath("/audit");
     return {
       success: true,
       message: "تم إضافة الموظف بنجاح",
@@ -216,6 +217,7 @@ export async function editEmployeeDetails(
     }
 
     revalidatePath("/employees", "page");
+    revalidatePath("/audit");
     return {
       success: true,
       message: "تم تحديث بيانات الموظف بنجاح",
