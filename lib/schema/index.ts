@@ -23,3 +23,36 @@ export const editEmployeeSchema = z.object({
 });
 
 export type EditEmployeeFormData = z.infer<typeof editEmployeeSchema>;
+
+export const citizenSchema = z.object({
+  // هوية
+  nationalId: z
+    .string()
+    .min(10, "الرقم الوطني يجب أن يكون 10 أرقام على الأقل")
+    .max(20, "الرقم الوطني طويل جداً")
+    .regex(/^\d+$/, "الرقم الوطني يجب أن يحتوي على أرقام فقط").optional().or(z.literal("")),
+
+  // البيانات الشخصية
+  firstName: z.string().min(2, "الاسم الأول مطلوب (حرفان على الأقل)"),
+  lastName: z.string().min(2, "الكنية / العائلة مطلوبة"),
+  fatherName: z.string().min(2, "اسم الأب مطلوب"),
+  motherName: z.string().min(2, "اسم الأم مطلوب"),
+
+  // تفاصيل الولادة
+  placeOfBirth: z.string().min(2, "مكان الولادة مطلوب"),
+  dateOfBirth: z.string().min(1, "تاريخ الولادة مطلوب"),
+
+  // تفاصيل القيد
+  registryPlace: z.string().min(2, "مكان القيد مطلوب"),
+  registryNumber: z.string().min(1, "رقم القيد مطلوب"),
+  familyBookId: z.string().optional(),
+
+  // الحالة الشخصية
+  gender: z.enum(["MALE", "FEMALE"]),
+  maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"]),
+  status: z.enum(["ACTIVE", "PENDING", "DECEASED", "INACTIVE"]),
+  religion: z.string().optional(),
+  currentAddress: z.string().optional(),
+});
+
+export type CitizenFormValues = z.infer<typeof citizenSchema>;
