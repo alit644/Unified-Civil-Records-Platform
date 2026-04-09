@@ -1,37 +1,49 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { Column, DataTable } from "@/components/DataTable";
 import { Employee } from "@/types";
-import { Role } from "@/lib/generated/prisma/enums";
 import { useToggleEmployeeStatus } from "@/hooks/useToggleEmployeeStatus";
 import AddEmployeeDrawer from "./AddEmployeeDrawer";
 import EditEmployeeDrawer from "./EditEmployeeDrawer";
 import MPagination from "@/components/shared/MPagination";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 
-
 interface EmployeeManagerProps {
   initialEmployees: Employee[];
+  currentPage: number;
+  totalPages: number;
 }
 
 export default function EmployeeManager({
   initialEmployees,
+  currentPage,
+  totalPages,
 }: EmployeeManagerProps) {
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editDrawerOpen, setEditDrawerOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
-    null,
-  );
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [employees, setEmployees] = useState(initialEmployees);
   const { toggleStatus, isPending } = useToggleEmployeeStatus(setEmployees);
+
+  // if (employees !== initialEmployees) {
+  //   setEmployees(initialEmployees);
+  // }
+  useEffect(() => {
+    setEmployees(initialEmployees);
+  }, [initialEmployees]);
+  const handlePageChange = (page: number) => {
+    router.push(`/employees?page=${page}`);
+  };
 
   const columns = useMemo<Column<Employee>[]>(
     () => [
       {
         key: "name",
-       header: "اسم الموظف",
+        header: "اسم الموظف",
         render: (e) => (
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
@@ -53,20 +65,16 @@ export default function EmployeeManager({
       {
         key: "role",
         header: "الدور",
-        render: (e) => (
-          <StatusBadge value={e.role} category="role" />
-        ),
+        render: (e) => <StatusBadge value={e.role} category="role" />,
       },
       {
         key: "status",
         header: "الحالة",
-        render: (e) => (
-          <StatusBadge value={e.isActive} category="status" className=""/>
-        ),
+        render: (e) => <StatusBadge value={e.isActive} category="status" />,
       },
       {
         key: "events",
-       header: "المعاملات",
+        header: "المعاملات",
         render: (e) => (
           <span className="text-muted-foreground">{e._count.civilEvents}</span>
         ),
@@ -80,7 +88,7 @@ export default function EmployeeManager({
       },
       {
         key: "actions",
-         header: "الإجراءات",
+        header: "الإجراءات",
         render: (e) => (
           <div className="flex gap-1">
             <button
@@ -90,16 +98,15 @@ export default function EmployeeManager({
               }}
               className="rounded border px-2 py-1 text-xs transition-colors hover:bg-secondary/50"
             >
-             تعديل الدور
+              تعديل الدور
             </button>
             <button
               onClick={() => toggleStatus(e.id, e.isActive)}
               disabled={e.role === "ADMIN" || isPending}
-              className={`rounded border px-2 py-1 text-xs transition-colors hover:bg-secondary/50 disabled:cursor-not-allowed disabled:opacity-50 ${
-                e.isActive
-                  ? "text-[hsl(var(--status-red-text))]"
-                  : "text-primary"
-              }`}
+              className={`rounded border px-2 py-1 text-xs transition-colors hover:bg-secondary/50 disabled:cursor-not-allowed disabled:opacity-50 ${e.isActive
+                ? "text-[hsl(var(--status-red-text))]"
+                : "text-primary"
+                }`}
             >
               {e.isActive ? "تعطيل" : "تفعيل"}
             </button>
@@ -124,11 +131,14 @@ export default function EmployeeManager({
             <Plus className="h-4 w-4" /> إضافة موظف جديد
           </button>
         </div>
-        <DataTable
-          columns={columns}
-          data={employees}
-        />
-        <MPagination totalPages={10} currentPage={1} onPageChange={() => 5}/>
+        <DataTable columns={columns} data={employees} />
+        {totalPages > 1 && (
+          <MPagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
 
       <AddEmployeeDrawer

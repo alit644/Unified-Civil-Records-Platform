@@ -1,3 +1,4 @@
+import { Prisma } from "@/lib/generated/prisma/client";
 import { Role } from "@/lib/generated/prisma/enums";
 
 export interface Citizen {
@@ -58,13 +59,17 @@ export interface Employee {
 }
 
 export interface IAuditLog {
-  date: string;
-  employee: string;
   action: string;
-  table: string;
-  record: string;
-  oldVal: string;
-  newVal: string;
+  createdAt: Date;
+  employee: {
+    name: string
+  },
+  employeeId: string;
+  id: string;
+  newData: Prisma.JsonValue | null;
+  oldData: Prisma.JsonValue | null;
+  recordId: string;
+  tableName: string;
 }
 
 export interface IUser {
