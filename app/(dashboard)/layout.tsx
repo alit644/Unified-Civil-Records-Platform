@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Home,
   Search,
@@ -18,6 +18,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { Role } from "@/lib/generated/prisma/enums";
 import LogOut from "@/components/LogOut";
+import { DashboardSkeleton } from "@/components/shared/DashboardSkeleton";
 const navItems = [
   {
     label: "الرئيسية",
@@ -47,7 +48,7 @@ const navItems = [
     label: "الأرشيف الرقمي",
     path: "/archive",
     icon: Archive,
-    role: ["ADMIN", "OFFICER","AUDITOR"],
+    role: ["ADMIN", "OFFICER", "AUDITOR"],
   },
   { label: "إدارة الموظفين", path: "/employees", icon: Users, role: ["ADMIN"] },
   {
@@ -78,15 +79,19 @@ export default function DashboardLayout({
   // get session
   const { data: session, isPending } = authClient.useSession();
   const userName = session?.user?.name;
-  const  userRole = session?.user?.role as Role;
+  const userRole = session?.user?.role as Role;
   const splitName = userName?.split(" ")[0]?.charAt(0)
   const pageTitle = pageTitles[pathname] || "السجل المدني";
-  if (isPending) return <div className="p-4">جاري التحميل...</div>;
-  return (
+  const router = useRouter();
+if (isPending) {
+    return <DashboardSkeleton />;
+  }
+if (!session) return router.push("/login");
+    return (
     <div className="flex min-h-screen w-full font-cairo" dir="rtl">
       {/* Sidebar */}
-    {sidebarOpen && (
-        <div 
+      {sidebarOpen && (
+        <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
@@ -94,9 +99,8 @@ export default function DashboardLayout({
 
       <aside
         // 2. تعديل الـ z-index إلى 50 ليكون فوق كل شيء
-        className={`fixed top-0 right-0 h-full z-50 flex flex-col transition-all duration-200 bg-sidebar-background ${
-          sidebarOpen ? "w-60" : "w-0 overflow-hidden"
-        }`}
+        className={`fixed top-0 right-0 h-full z-50 flex flex-col transition-all duration-200 bg-sidebar-background ${sidebarOpen ? "w-60" : "w-0 overflow-hidden"
+          }`}
       >
         {/* Logo area */}
         <div className="p-5 border-b border-sidebar-border">
@@ -126,11 +130,10 @@ export default function DashboardLayout({
               <Link
                 key={item.path}
                 href={item.path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors ${
-                  isActive
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors ${isActive
                     ? "bg-sidebar-accent text-sidebar-foreground font-medium border-r-2 border-sidebar-foreground"
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                }`}
+                  }`}
               >
                 <item.icon className="w-4 h-4 shrink-0" />
                 <span>{item.label}</span>
@@ -140,7 +143,7 @@ export default function DashboardLayout({
         </nav>
 
         {/* User info */}
-        <div className="p-4 border-t border-sidebar-border">
+        <div className="p-4 border-t border-sidebar-border ">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center text-sidebar-foreground text-xs font-bold">
               {splitName}
@@ -157,25 +160,27 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main */}
-    <div
-        className={`flex-1 flex flex-col transition-all duration-200 ${
-          sidebarOpen ? "md:mr-60 mr-0" : "mr-0"
-        }`}
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ${sidebarOpen ? "md:mr-60" : ""
+          }`}
       >
         {/* Header */}
-        <header className="sticky top-0 z-30 h-16 bg-card border-b flex items-center px-6 gap-4 shadow-sm">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            {sidebarOpen ? (
-              <X className="w-5 h-5" />
-            ) : (
-              <Menu className="w-5 h-5" />
-            )}
-          </button>
-          <h2 className="text-lg font-bold text-foreground">{pageTitle}</h2>
+        <header className="sticky top-0 z-30 h-16 bg-card border-b flex items-center justify-between px-4 md:px-6 gap-4 shadow-sm">
+          <div className="flex items-center gap-4">
 
+
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {sidebarOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </button>
+            <h2 className="text-lg font-bold text-foreground">{pageTitle}</h2>
+          </div>
           <div className="flex-1 max-w-md mx-auto hidden sm:block">
             <div className="relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -198,18 +203,18 @@ export default function DashboardLayout({
               <HelpCircle className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2 pr-3 border-r">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
-          {splitName}
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0">
+                {splitName}
               </div>
-              <span className="text-sm font-medium">{userName}</span>
-              <ChevronDown className="w-3 h-3 text-muted-foreground" />
+              <span className="text-sm font-medium truncate hidden lg:block max-w-[100px]">{userName}</span>
+              <ChevronDown className="w-3 h-3 text-muted-foreground hidden sm:block" />
             </div>
           </div>
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-8">
-          <div className="max-w-7xl mx-auto">{children}</div>
+        <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
+          <div className="max-w-7xl mx-auto w-full">{children}</div>
         </main>
       </div>
     </div>

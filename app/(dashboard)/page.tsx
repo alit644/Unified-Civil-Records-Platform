@@ -66,7 +66,6 @@ const columns: Column<Event>[] = [
   },
 ]
 export default async function Dashboard() {
-
   // جلب الجلسة باستخدام الـ headers الحالية
   const session = await auth.api.getSession({
     headers: await headers(),
