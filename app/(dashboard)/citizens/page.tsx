@@ -4,6 +4,7 @@ import CitizenActions from "./_components/CitizenActions";
 import { Column, DataTable } from "@/components/DataTable";
 import { Citizen } from "@/types";
 import SearchBar from "./_components/SearchBar";
+import MPagination from "@/components/shared/MPagination";
 
 
 const citizens = [
@@ -99,7 +100,9 @@ const statusBadge = (s: string) => {
     },
   ]
 
-
+  // TODO: اضافة المواطن الحقيقيين بدل العشوائيين في البيانات التجريبية
+  // TODO: عرض المواطنيين في جدول مع امكانية البحث والتصفية والفرز
+  // TODO: عند الضغط على عرض، يتم فتح صفحة تفاصيل المواطن مع كل بياناته وخيارات تعديلها او اصدار وثائق جديدة له
 export default function CitizenSearch() {
 
   return (
