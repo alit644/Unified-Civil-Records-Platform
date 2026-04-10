@@ -8,7 +8,6 @@ import CitizenActions from "./CitizenActions";
 import MPagination from "@/components/shared/MPagination";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface CitizensManagerProps {
   initialCitizens: Citizen[];
