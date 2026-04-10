@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# النظام الرقمي الموحد للسجل المدني (Unified Civil Records Platform)
 
-## Getting Started
+نظام إداري متكامل مصمم لإدارة بيانات المواطنين، الواقعات المدنية، وإصدار الوثائق الرسمية بأسلوب رقمي حديث وآمن.
 
-First, run the development server:
+## ✨ المميزات الرئيسية (Key Features)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 👥 إدارة المواطنين والقيود (Citizen & Record Management)
+- **إدارة القيود:** إضافة، عرض، وتعديل بيانات المواطنين مع حماية كاملة للحقول الحساسة وضبط أدوار المستخدمين.
+- **الوراثة الذكية:** ربط الأبناء بالآباء برمجياً وتوليد القيود بشكل آلي يضمن ترابط الشجرة العائلية في النظام.
+- **توليد الرقم الوطني:** خوارزمية ذكية لتوليد أرقام وطنية فريدة وغير مكررة، مبنية بدقة على بيانات المواطن (سنة الميلاد ورمز المحافظة).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🔍 أدوات متقدمة للبحث والتحليل (Advanced Tools)
+- **البحث السريع العالمي:** شريط بحث ذكي في الهيدر يتيح الوصول الفوري لبيانات المواطنين من أي صفحة عبر تقنية *Debouncing*.
+- **فلاتر متعددة:** نظام فلترة دقيق يدعم البحث بالكلمات المتعددة، الجنس، الحالة المدنية، ونوع السجل.
+- **تصدير البيانات:** دعم كامل لتصدير نتائج البحث والتقارير إلى ملفات **Excel (XLSX)** بضغطة واحدة.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 📄 إصدار الوثائق الرسمية (Document Issuance)
+- **بيان القيد الفردي:** ميزة الإصدار السريع لبيانات القيد مباشرة من قائمة المواطنين.
+- **الأرشفة الرقمية:** نظام متكامل للأرشفة يربط الوثائق الممسوحة ضوئياً بملفات المواطنين.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🔐 الأمان والرقابة (Security & Audit)
+- **سجل التدقيق الكامل (Audit Trail):** توثيق كل عملية (إضافة أو تعديل) مع تحديد اسم الموظف والتوقيت لضمان المراقبة والشفافية.
+- **حماية مستوى الخادم:** توظيف تقنيات *Better-Auth* لتأمين الجلسات والحماية من الوصول غير المصرح به.
 
-## Learn More
+## 🛠️ التقنيات المستخدمة (Tech Stack)
 
-To learn more about Next.js, take a look at the following resources:
+- **Frontend:** Next.js 15 (App Router), Tailwind CSS, Shadcn UI.
+- **Backend:** Next.js Server Actions, Prisma ORM.
+- **Database:** PostgreSQL.
+- **Authentication:** Better-Auth.
+- **Icons & UI:** Lucide React, Framer Motion.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 التشغيل والتطوير (Getting Started)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### المتطلبات (Prerequisites)
+- Node.js (Latest LTS)
+- PostgreSQL Database
 
-## Deploy on Vercel
+### التثبيت (Installation)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. قم بتحميل المشروع:
+   ```bash
+   git clone https://github.com/alit644/Unified-Civil-Records-Platform.git
+   cd Unified-Civil-Records-Platform
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. تثبيت المكتبات:
+   ```bash
+   npm install
+   ```
+
+3. إعداد البيئة (Environment Variables):
+   قم بإنشاء ملف `.env` وإضافة الرابط الخاص بقاعدة البيانات:
+   ```env
+   DATABASE_URL="postgresql://user:password@localhost:5432/civil_records"
+   BETTER_AUTH_SECRET="your_secret_here"
+   ```
+
+4. تهيئة قاعدة البيانات:
+   ```bash
+   npx prisma db push
+   ```
+
+5. تشغيل النظام:
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## 📸 واجهة المستخدم (UI Design)
+يتبنى النظام فلسفة التصميم الحديثة (Modern & Minimalist) مع التركيز على تجربة المستخدم (UX) في الشاشات المختلفة، ودعم كامل للوضع الليلي (Dark Mode) والواجهات المتجاوبة (Responsive Design).
+
+---
+**تطوير:** ALI_TALIB
