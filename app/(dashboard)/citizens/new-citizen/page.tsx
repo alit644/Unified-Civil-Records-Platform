@@ -1,7 +1,4 @@
 import NewCitizenForm from "../_components/NewCitizenForm";
-import {
-  ChevronRight,
-} from "lucide-react";
 
 export default function NewCitizenPage() {
   

@@ -1,14 +1,19 @@
 import { Prisma } from "@/lib/generated/prisma/client";
-import { Role } from "@/lib/generated/prisma/enums";
+import { CitizenStatus, Gender, MaritalStatus, Role } from "@/lib/generated/prisma/enums";
 
 export interface Citizen {
-  name: string;
-  nid: string;
-  gender: string;
-  neighborhood: string;
-  marital: string;
-  status: string;
-  updated: string;
+      id: string,
+      firstName: string,
+      lastName: string,
+      nationalId: string,
+      gender: Gender,
+      dateOfBirth: Date,
+      maritalStatus: MaritalStatus,
+      status: CitizenStatus,
+      currentAddress: string | null,
+      updatedAt: Date,
+      fatherName: string | null,
+      motherName: string | null,
 }
 
 export interface Event {
