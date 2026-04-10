@@ -67,6 +67,8 @@ const SearchBar = () => {
             <Input
               placeholder="ابحث بالاسم الكامل أو الرقم الوطني أو رقم دفتر العائلة..."
               className="pr-10 h-14 text-base focus-visible:ring-1 focus-visible:ring-primary rounded-xl"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
             />
           </div>
 
