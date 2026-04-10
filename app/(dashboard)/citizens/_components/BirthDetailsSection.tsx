@@ -9,8 +9,9 @@ import React from "react";
 
 interface BirthDetailsSectionProps {
   control: Control<CitizenFormValues>;
+  isEditMode: boolean;
 }
-const BirthDetailsSection = ({ control }: BirthDetailsSectionProps) => {
+const BirthDetailsSection = ({ control, isEditMode }: BirthDetailsSectionProps) => {
   return (
       <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
               <div className="p-5 border-b">
@@ -32,6 +33,9 @@ const BirthDetailsSection = ({ control }: BirthDetailsSectionProps) => {
                         <Input
                           id="placeOfBirth"
                           type="text"
+                          disabled={isEditMode}
+                          readOnly={isEditMode}
+                          className={isEditMode ? "bg-muted cursor-not-allowed opacity-70" : ""}
                           placeholder="المدينة / المحافظة"
                           aria-invalid={fieldState.invalid}
                           {...field}
@@ -46,6 +50,9 @@ const BirthDetailsSection = ({ control }: BirthDetailsSectionProps) => {
                       render={({ field, fieldState }) => (
                         <Input
                           id="dateOfBirth"
+                          disabled={isEditMode}
+                          readOnly={isEditMode}
+                          className={isEditMode ? "bg-muted cursor-not-allowed opacity-70" : ""}
                           type="date"
                           aria-invalid={fieldState.invalid}
                           {...field}

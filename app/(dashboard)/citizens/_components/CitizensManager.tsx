@@ -7,7 +7,8 @@ import SearchBar from "./SearchBar";
 import CitizenActions from "./CitizenActions";
 import MPagination from "@/components/shared/MPagination";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import EditCitizenDrawer from "./EditCitizenDrawer";
 
 interface CitizensManagerProps {
   initialCitizens: Citizen[];
@@ -16,88 +17,96 @@ interface CitizensManagerProps {
   totalCitizens: number;
 }
 
-const columns: Column<Citizen>[] = [
-  {
-    key: "name",
-    header: "الاسم الكامل",
-    render: (c) => (
-      <span className="font-medium ">
-        {`${c.firstName} ${c.fatherName} ${c.lastName}`}
-      </span>
-    ),
-  },
-  {
-    key: "nid",
-    header: "الرقم الوطني",
-    render: (c) => (
-      <span className="font-mono text-xs
-        text-muted-foreground">
-        {c.nationalId}
-      </span>
-    ),
-  },
-  {
-    key: "gender",
-    header: "الجنس",
-    render: (c) => (
-      <span >
-        {c.gender === "MALE" ? "ذكر" : "أنثى"}
-      </span>
-    ),
-  },
-  {
-    key: "neighborhood",
-    header: "الحي",
-    render: (c) => (
-      <span >
-        {c.currentAddress?.split(" ").slice(0, 2).join(" ")}
-      </span>
-    ),
-  },
-  {
-    key: "marital",
-    header: "الحالة المدنية",
-    render: (c) => (
-      <StatusBadge value={c.maritalStatus} category="marital" />
-    ),
-  },
-  {
-    key: "status",
-    header: "حالة السجل",
-    render: (c) => (
-      <StatusBadge value={c.status} category="status_citizen" />
-    ),
-  },
-  {
-    key: "updated",
-    header: "آخر تحديث",
-    render: (c) => (
-      <span className="text-muted-foreground">
-        {c.updatedAt.toISOString().split("T")[0]}
-      </span>
-    ),
-  },
-  {
-    key: "actions",
-    header: "خيارات",
-    render: (c) => (
-      <div className="flex gap-1">
-        <Link href={`/citizens/${c.id}`} className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">عرض</Link>
-        <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">تعديل</button>
-        <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">إصدار وثيقة</button>
-      </div>
-    ),
-  },
-]
+
 export default function CitizensManager({ initialCitizens, currentPage, totalPages, totalCitizens }: CitizensManagerProps) {
   const router = useRouter();
+  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
   const [citizens, setCitizens] = useState(initialCitizens);
+  const [selectedCitizen, setSelectedCitizen] = useState<Citizen | null>(null);
   useEffect(() => {
     setCitizens(initialCitizens);
   }, [initialCitizens]);
+
   const handlePageChange = (page: number) => {
     router.push(`/citizens?page=${page}`);
   };
+  const columns = useMemo<Column<Citizen>[]>(() => [
+    {
+      key: "name",
+      header: "الاسم الكامل",
+      render: (c) => (
+        <span className="font-medium ">
+          {`${c.firstName} ${c.fatherName} ${c.lastName}`}
+        </span>
+      ),
+    },
+    {
+      key: "nid",
+      header: "الرقم الوطني",
+      render: (c) => (
+        <span className="font-mono text-xs
+        text-muted-foreground">
+          {c.nationalId}
+        </span>
+      ),
+    },
+    {
+      key: "gender",
+      header: "الجنس",
+      render: (c) => (
+        <span >
+          {c.gender === "MALE" ? "ذكر" : "أنثى"}
+        </span>
+      ),
+    },
+    {
+      key: "neighborhood",
+      header: "الحي",
+      render: (c) => (
+        <span >
+          {c.currentAddress?.split(" ").slice(0, 2).join(" ") || "غير محدد"}
+        </span>
+      ),
+    },
+    {
+      key: "marital",
+      header: "الحالة المدنية",
+      render: (c) => (
+        <StatusBadge value={c.maritalStatus} category="marital" />
+      ),
+    },
+    {
+      key: "status",
+      header: "حالة السجل",
+      render: (c) => (
+        <StatusBadge value={c.status} category="status_citizen" />
+      ),
+    },
+    {
+      key: "updated",
+      header: "آخر تحديث",
+      render: (c) => (
+        <span className="text-muted-foreground">
+          {c.updatedAt.toISOString().split("T")[0]}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "خيارات",
+      render: (c) => (
+        <div className="flex gap-1">
+          <Link href={`/citizens/${c.id}`} className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">عرض</Link>
+          <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50"   onClick={() => {
+            setSelectedCitizen(c);
+            setEditDrawerOpen(true);
+              }}>تعديل</button>
+          <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">إصدار وثيقة</button>
+        </div>
+      ),
+    },
+  ], [setEditDrawerOpen])
+
   return (
     <div className="space-y-6">
       {/* Search Bar */}
@@ -130,6 +139,13 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
         </div>
 
       </div>
+      {selectedCitizen && (
+        <EditCitizenDrawer
+          open={editDrawerOpen}
+          onClose={() => setEditDrawerOpen(false)}
+          initialData={selectedCitizen}
+        />
+      ) }
     </div>
   )
 }
