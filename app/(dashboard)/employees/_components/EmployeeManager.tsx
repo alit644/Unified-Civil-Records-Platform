@@ -28,10 +28,6 @@ export default function EmployeeManager({
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [employees, setEmployees] = useState(initialEmployees);
   const { toggleStatus, isPending } = useToggleEmployeeStatus(setEmployees);
-
-  // if (employees !== initialEmployees) {
-  //   setEmployees(initialEmployees);
-  // }
   useEffect(() => {
     setEmployees(initialEmployees);
   }, [initialEmployees]);

@@ -16,7 +16,7 @@ export default function CitizenActions({ citizens }: CitizenActionsProps) {
 
   return (
     <div className="flex gap-2">
-      <Link href="/citizens/new">
+      <Link href="/citizens/new-citizen">
         <Button title="إضافة مواطن جديد" aria-label="إضافة مواطن جديد" className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 flex items-center gap-1">
           <Plus className="w-4 h-4" /> إضافة مواطن جديد
         </Button>

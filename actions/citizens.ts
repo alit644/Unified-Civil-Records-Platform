@@ -2,11 +2,13 @@
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
+import { Role } from "@/lib/generated/prisma/enums";
 import { CitizenFormValues, citizenSchema } from "@/lib/schema";
 import { extractGovernorateCode, getUniqueNationalId } from "@/lib/utils/generate-id";
 import { parseISO } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { createAuditLog } from "./audit";
 
 export async function createCitizen(data: CitizenFormValues) {
 
@@ -22,10 +24,10 @@ export async function createCitizen(data: CitizenFormValues) {
       headers: await headers(),
     });
 
-    if (!session || session.user.role !== "ADMIN" && session.user.role !== "OFFICER") {
+    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role as Role) ) {
       return {
         success: false,
-        message: "غير مصرح لك بتعديل معلومات الموظف",
+        message: "غير مصرح لك بتعديل معلومات المواطن",
       };
     }
 
@@ -43,7 +45,26 @@ export async function createCitizen(data: CitizenFormValues) {
       },
     });
 
+    await createAuditLog({
+      action: "CREATE_CITIZEN",
+      tableName: "citizen",
+      recordId: newCitizen.id,
+      newData: {
+        firstName: newCitizen.firstName,
+        lastName: newCitizen.lastName,
+        nationalId: newCitizen.nationalId,
+        gender: newCitizen.gender,
+        dateOfBirth: newCitizen.dateOfBirth.toISOString(),
+        maritalStatus: newCitizen.maritalStatus,
+        status: newCitizen.status,
+        fatherName: newCitizen.fatherName,
+        motherName: newCitizen.motherName,
+        currentAddress: newCitizen.currentAddress,
+      },
+      employeeId: session.user.id,
+    });
     revalidatePath("/citizens");
+    revalidatePath("/audit");
     return {
       success: true,
       message: `تم حفظ المواطن بنجاح! الرقم الوطني المُولد: ${generatedNationalId}`,
