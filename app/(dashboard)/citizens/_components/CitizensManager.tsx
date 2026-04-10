@@ -7,8 +7,9 @@ import SearchBar from "./SearchBar";
 import CitizenActions from "./CitizenActions";
 import MPagination from "@/components/shared/MPagination";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import EditCitizenDrawer from "./EditCitizenDrawer";
+import { Button } from "@/components/ui/button";
 
 interface CitizensManagerProps {
   initialCitizens: Citizen[];
@@ -97,11 +98,13 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
       render: (c) => (
         <div className="flex gap-1">
           <Link href={`/citizens/${c.id}`} className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">عرض</Link>
-          <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50"   onClick={() => {
+          <Button variant="outline" size="sm" className="bg-secondary/10! px-2 py-1 rounded border text-xs hover:bg-secondary/50" onClick={() => {
             setSelectedCitizen(c);
             setEditDrawerOpen(true);
-              }}>تعديل</button>
-          <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">إصدار وثيقة</button>
+          }}>تعديل</Button>
+          <Button variant="outline" size="sm" className="bg-secondary/10! px-2 py-1 rounded border border-primary/20 text-primary text-[10px] sm:text-xs hover:bg-primary/5 transition-colors">
+            بيان قيد فردي
+          </Button>
         </div>
       ),
     },
@@ -110,11 +113,13 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
   return (
     <div className="space-y-6">
       {/* Search Bar */}
-      <SearchBar />
+      <Suspense fallback={<div className="h-24 bg-muted rounded-lg animate-pulse" />}>
+        <SearchBar />
+      </Suspense>
 
       {/* Results */}
       <div className="bg-card rounded-lg border shadow-sm">
-        <div className="p-5 border-b flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h4 className="font-bold">نتائج البحث</h4>
 
           <CitizenActions citizens={citizens} />
@@ -145,7 +150,7 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
           onClose={() => setEditDrawerOpen(false)}
           initialData={selectedCitizen}
         />
-      ) }
+      )}
     </div>
   )
 }

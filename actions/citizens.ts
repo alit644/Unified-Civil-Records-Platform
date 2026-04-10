@@ -148,3 +148,48 @@ export async function updateCitizen(data: CitizenFormValues , id: string) {
     return { success: false, message: "حدث خطأ داخلي في الخادم أثناء الحفظ." };
   }
 }
+
+export async function quickSearchCitizens(query: string) {
+  if (!query || query.length < 2) return [];
+
+  const searchParts = query.trim().replace(/\s+/g, ' ').split(" ");
+  
+  const where: any = {};
+  if (searchParts.length > 1) {
+    where.AND = searchParts.map((part) => ({
+      OR: [
+        { firstName: { contains: part, mode: 'insensitive' } },
+        { lastName: { contains: part, mode: 'insensitive' } },
+        { fatherName: { contains: part, mode: 'insensitive' } },
+        { nationalId: { contains: part, mode: 'insensitive' } },
+        { familyBookId: { contains: part, mode: 'insensitive' } },
+      ],
+    }));
+  } else {
+    where.OR = [
+      { firstName: { contains: query, mode: 'insensitive' } },
+      { lastName: { contains: query, mode: 'insensitive' } },
+      { fatherName: { contains: query, mode: 'insensitive' } },
+      { nationalId: { contains: query, mode: 'insensitive' } },
+      { familyBookId: { contains: query, mode: 'insensitive' } },
+    ];
+  }
+
+  try {
+    const citizens = await prisma.citizen.findMany({
+      where,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        nationalId: true,
+        status: true,
+      },
+      take: 5,
+    });
+    return citizens;
+  } catch (error) {
+    console.error("Global search error:", error);
+    return [];
+  }
+}
