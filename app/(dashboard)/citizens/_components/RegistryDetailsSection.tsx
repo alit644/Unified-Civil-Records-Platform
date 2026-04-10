@@ -9,8 +9,9 @@ import React from "react";
 
 interface RegistryDetailsSectionProps {
   control: Control<CitizenFormValues>;
+  isEditMode: boolean;
 }
-const RegistryDetailsSection = ({ control }: RegistryDetailsSectionProps) => {
+const RegistryDetailsSection = ({ control, isEditMode }: RegistryDetailsSectionProps) => {
   return (
       <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
               <div className="p-5 border-b">
@@ -32,6 +33,9 @@ const RegistryDetailsSection = ({ control }: RegistryDetailsSectionProps) => {
                         <Input
                           id="registryPlace"
                           type="text"
+                          disabled={isEditMode}
+                          readOnly={isEditMode}
+                          className={isEditMode ? "bg-muted cursor-not-allowed opacity-70" : ""}
                           placeholder="المديرية أو الأمانة"
                           aria-invalid={fieldState.invalid}
                           {...field}
@@ -47,6 +51,9 @@ const RegistryDetailsSection = ({ control }: RegistryDetailsSectionProps) => {
                         <Input
                           id="registryNumber"
                           type="text"
+                          disabled={isEditMode}
+                          readOnly={isEditMode}
+                          className={isEditMode ? "bg-muted cursor-not-allowed opacity-70" : ""}
                           placeholder="أدخل رقم القيد"
                           aria-invalid={fieldState.invalid}
                           {...field}
@@ -63,6 +70,9 @@ const RegistryDetailsSection = ({ control }: RegistryDetailsSectionProps) => {
                           <Input
                             id="familyBookId"
                             type="text"
+                            disabled={isEditMode}
+                            readOnly={isEditMode}
+                            className={isEditMode ? "bg-muted cursor-not-allowed opacity-70" : ""}
                             placeholder="أدخل رقم دفتر العائلة إن وُجد"
                             aria-invalid={fieldState.invalid}
                             {...field}

@@ -24,7 +24,7 @@ export async function createCitizen(data: CitizenFormValues) {
       headers: await headers(),
     });
 
-    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role as Role) ) {
+    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role as Role)) {
       return {
         success: false,
         message: "غير مصرح لك بتعديل معلومات المواطن",
@@ -78,4 +78,73 @@ export async function createCitizen(data: CitizenFormValues) {
     return { success: false, message: "حدث خطأ داخلي في الخادم أثناء الحفظ." };
   }
 
+}
+
+export async function updateCitizen(data: CitizenFormValues , id: string) {
+  try {
+    // validate data
+    const validatedFields = citizenSchema.safeParse(data);
+    if (!validatedFields.success) {
+      return { success: false, message: "بيانات المدخلات غير صالحة" };
+    }
+
+    // التحقق من الصلاحية
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role as Role)) {
+      return {
+        success: false,
+        message: "غير مصرح لك بتعديل معلومات المواطن",
+      };
+    }
+
+    // check if citizen exists
+    const existingCitizen = await prisma.citizen.findUnique({
+      where: { id },
+    });
+
+    if (!existingCitizen) {
+      return { success: false, message: "المواطن غير موجود" };
+    }
+
+    // update citizen
+    const updatedCitizen = await prisma.citizen.update({
+      where: { id },
+      data: {
+        ...validatedFields.data,
+        dateOfBirth: parseISO(validatedFields.data.dateOfBirth),
+      },
+    });
+
+    await createAuditLog({
+      action: "UPDATE_CITIZEN",
+      tableName: "citizen",
+      recordId: updatedCitizen.id,
+      newData: {
+        firstName: updatedCitizen.firstName,
+        lastName: updatedCitizen.lastName,
+        fatherName: updatedCitizen.fatherName,
+        motherName: updatedCitizen.motherName,
+        gender: updatedCitizen.gender,
+        currentAddress: updatedCitizen.currentAddress,
+      },
+      employeeId: session.user.id,
+    });
+    revalidatePath("/citizens");
+    revalidatePath("/audit");
+    return {
+      success: true,
+      message: "تم تعديل المواطن بنجاح!",
+      data: updatedCitizen
+    };
+
+  } catch (error: any) {
+    console.error("Error creating citizen:", error);
+    if (error.name === "ZodError") {
+      return { success: false, message: "بيانات غير صالحة، يرجى التحقق من الحقول." };
+    }
+    return { success: false, message: "حدث خطأ داخلي في الخادم أثناء الحفظ." };
+  }
 }

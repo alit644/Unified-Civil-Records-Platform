@@ -67,7 +67,7 @@ export default async function CitizenProfilePage({ params }: { params: Promise<{
           </div>
         </div>
 
-        <ProfileHeaderActions />
+        <ProfileHeaderActions citizen={citizen} />
       </div>
 
       {/* Info cards  */}

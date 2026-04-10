@@ -6,6 +6,7 @@ export const AUDIT_ACTION_MAP: Record<string, { label: string; color: string }> 
   STATUS_CHANGE: { label: "تغيير حالة", color: "bg-orange-100 text-orange-800 hover:bg-orange-100 border-orange-200" },
   LOGIN: { label: "تسجيل دخول", color: "bg-gray-100 text-gray-800 hover:bg-gray-100 border-gray-200" },
   CREATE_CITIZEN: { label: "إضافة مواطن", color: "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
+  UPDATE_CITIZEN: { label: "تعديل مواطن", color: "bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200" },
 };
 
 // 2. قاموس أدوار الموظفين (Roles)

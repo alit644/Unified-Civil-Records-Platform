@@ -14,7 +14,10 @@ export interface Citizen {
       updatedAt: Date,
       fatherName: string | null,
       motherName: string | null,
-}
+      registryPlace: string
+      registryNumber: string
+      familyBookId: string | null
+    }
 
 export interface Event {
   type: string;

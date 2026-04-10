@@ -5,8 +5,8 @@ import { AlertCircle, RefreshCcw } from "lucide-react";
 export const dynamic = "force-dynamic";
 const PAGE_SIZE = 10;
 
-// TODO: عرض المواطنيين في جدول مع امكانية البحث والتصفية والفرز
-// TODO: عند الضغط على عرض، يتم فتح صفحة تفاصيل المواطن مع كل بياناته وخيارات تعديلها او اصدار وثائق جديدة له
+// TODO: البحث والتصفية والفرز
+// TODO: اصدار وثائق جديدة للمواطن
 export default async function CitizenSearch({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const { page = "1" } = await searchParams;
   const currentPage = Math.max(1, parseInt(page as string, 10) || 1);
@@ -27,6 +27,10 @@ export default async function CitizenSearch({ searchParams }: { searchParams: Pr
         motherName: true,
         currentAddress: true,
         updatedAt: true,
+        registryPlace: true,
+        registryNumber: true,
+        familyBookId: true,
+        placeOfBirth: true,
       },
       orderBy: { createdAt: "desc" },
       skip,
@@ -63,3 +67,4 @@ export default async function CitizenSearch({ searchParams }: { searchParams: Pr
 
 
 }
+

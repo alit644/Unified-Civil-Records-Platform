@@ -34,6 +34,7 @@ export function StatusBadge({ value, category, className }: StatusBadgeProps) {
       break;
     case "status_citizen":
       mapData = STATUS_CITIZEN_MAP[stringValue];
+
       break;
   }
 

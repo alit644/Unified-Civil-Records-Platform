@@ -9,17 +9,19 @@ import { Control, Controller, FieldValues, Path } from "react-hook-form";
 import { Field, FieldError, FieldLabel } from "./ui/field";
 type RHFFieldProps<T extends FieldValues> = {
   control: Control<T>;
-  name:  Path<T>;
+  name: Path<T>;
   label: string;
   placeholder: string;
   options: { value: string; label: string }[];
+  isEditMode?: boolean;
 }
-export function RHFSelect <T extends FieldValues>({
+export function RHFSelect<T extends FieldValues>({
   name,
   control,
   label,
   placeholder,
   options,
+  isEditMode
 }: RHFFieldProps<T>) {
   return (
     <Controller
@@ -33,8 +35,9 @@ export function RHFSelect <T extends FieldValues>({
             onValueChange={field.onChange}
           >
             <SelectTrigger
+              disabled={isEditMode}
+              className={isEditMode ? "w-full h-9 bg-muted cursor-not-allowed opacity-70" : ""}
               id={name}
-              className="w-full h-9"
               aria-invalid={fieldState.invalid}
             >
               <SelectValue placeholder={placeholder} />

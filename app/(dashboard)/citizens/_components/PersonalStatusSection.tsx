@@ -11,8 +11,9 @@ import React from "react";
 
 interface PersonalStatusSectionProps {
   control: Control<CitizenFormValues>;
+  isEditMode: boolean;
 }
-const PersonalStatusSection = ({ control }: PersonalStatusSectionProps) => {
+const PersonalStatusSection = ({ control, isEditMode }: PersonalStatusSectionProps) => {
   return (
     <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
           <div className="p-5 border-b">
@@ -36,6 +37,7 @@ const PersonalStatusSection = ({ control }: PersonalStatusSectionProps) => {
                 <RHFSelect
                   name="maritalStatus"
                   control={control}
+                  isEditMode={isEditMode}
                   label="الحالة الاجتماعية"
                   placeholder="اختر الحالة الاجتماعية"
                   options={maritalStatusOptions}

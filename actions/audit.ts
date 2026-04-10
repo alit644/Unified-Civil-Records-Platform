@@ -4,6 +4,7 @@ import { Prisma } from "@/lib/generated/prisma/client";
 type ActionType =
   | "CREATE"
   | "CREATE_CITIZEN"
+  | "UPDATE_CITIZEN"
   | "UPDATE"
   | "DELETE"
   | "STATUS_CHANGE"
