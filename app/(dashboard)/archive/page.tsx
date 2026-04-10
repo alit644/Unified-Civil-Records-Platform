@@ -1,7 +1,7 @@
 import { statsData } from "@/components/data";
 import { Column, DataTable } from "@/components/DataTable";
 import { MetricCard } from "@/components/MetricCard";
-import { Select, SelectItem } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Archive } from "@/types";
 import { Search, Download } from "lucide-react";
 
@@ -84,21 +84,24 @@ export default function DigitalArchive() {
               <input placeholder="ابحث برقم الأرشيف أو اسم المواطن..." className="w-full h-10 pr-10 pl-4 rounded-md border bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
             </div>
           </div>
-{/* className="h-10 px-3 rounded-md border bg-background text-sm" */}
-          <Select >
-            <option>جميع الأنواع</option>
+          <Select defaultValue="all">
+            <SelectTrigger className="h-10 px-3 rounded-md border bg-background text-sm">
+                <SelectValue placeholder="اختر النوع" />
+            </SelectTrigger>
+            <SelectContent>
             <SelectItem value="all">حميع الأنواع</SelectItem>
-            <option>سند إقامة</option>
-            <option>شهادة ميلاد</option>
-            <option>شهادة زواج</option>
-            <option>شهادة وفاة</option>
-            <option>قيد عائلي</option>
+            <SelectItem value="sindIqama">سند إقامة</SelectItem>
+            <SelectItem value="shahadatMilad">شهادة ميلاد</SelectItem>
+            <SelectItem value="shahadatZawaj">شهادة زواج</SelectItem>
+            <SelectItem value="shahadatWafah">شهادة وفاة</SelectItem>
+            <SelectItem value="qaidI3ali">قيد عائلي</SelectItem>
+            </SelectContent>
           </Select>
           <button className="h-10 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90">بحث</button>
         </div>
       </div>
           <Select defaultValue="all">
-            <SelectTrigger>
+            <SelectTrigger className="h-10 px-3 rounded-md border bg-background text-sm">
               <SelectValue placeholder="اختر الحي" />
             </SelectTrigger>
             <SelectContent>
