@@ -1,18 +1,10 @@
 import * as XLSX from "xlsx";
+import { Citizen } from "@/types";
 
-interface CitizenRow {
-  name: string;
-  nid: string;
-  gender: string;
-  neighborhood: string;
-  marital: string;
-  status: string;
-  updated: string;
-}
 
-export function exportCitizensToXlsx(citizens: CitizenRow[]) {
+export function exportCitizensToXlsx(citizens: Citizen[]) {
   const headers = ["الاسم الكامل", "الرقم الوطني", "الجنس", "الحي", "الحالة المدنية", "حالة السجل", "آخر تحديث"];
-  const data = citizens.map((c) => [c.name, c.nid, c.gender, c.neighborhood, c.marital, c.status, c.updated]);
+  const data = citizens.map((c) => [`${c.firstName} ${c.fatherName} ${c.lastName}`, c.nationalId, c.gender, c.currentAddress?.split(" ").slice(0, 2).join(" "), c.maritalStatus, c.status, c.updatedAt.toISOString().split("T")[0]]);
 
   const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
 

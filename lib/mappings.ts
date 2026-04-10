@@ -19,3 +19,16 @@ export const STATUS_MAP: Record<string, { label: string; color: string }> = {
   ACTIVE: { label: "نشط", color: " bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200" },
   INACTIVE: { label: "موقوف", color: " bg-rose-100 text-rose-800 hover:bg-rose-100 border-rose-200" },
 };
+
+export const MARITAL_STATUS_MAP: Record<string, { label: string; color: string }> = {
+  SINGLE: { label: "أعزب", color: " bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200" },
+  MARRIED: { label: "متزوج", color: " bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
+  DIVORCED: { label: "مطلق", color: " bg-orange-100 text-orange-800 hover:bg-orange-100 border-orange-200" },
+  WIDOWED: { label: "أرمل", color: " bg-red-100 text-red-800 hover:bg-red-100 border-red-200" },
+};
+export const STATUS_CITIZEN_MAP: Record<string, { label: string; color: string }> = {
+  ACTIVE: { label: "نشط", color: " bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200" },
+  INACTIVE: { label: "موقوف", color: " bg-rose-100 text-rose-800 hover:bg-rose-100 border-rose-200" },
+  PENDING: { label: "بانتظار التدقيق", color: " bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200" },
+  DECEASED: { label: "متوفى", color: " bg-red-100 text-red-800 hover:bg-red-100 border-red-200" },
+};
