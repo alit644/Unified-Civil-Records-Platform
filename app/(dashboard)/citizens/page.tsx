@@ -5,15 +5,55 @@ import { AlertCircle, RefreshCcw } from "lucide-react";
 export const dynamic = "force-dynamic";
 const PAGE_SIZE = 10;
 
-// TODO: البحث والتصفية والفرز
 // TODO: اصدار وثائق جديدة للمواطن
 export default async function CitizenSearch({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
-  const { page = "1" } = await searchParams;
+  const { page = "1", q, gender, status } = await searchParams;
   const currentPage = Math.max(1, parseInt(page as string, 10) || 1);
   const skip = (currentPage - 1) * PAGE_SIZE;
 
+  const where: any = {};
+  // search by status
+  if (status && status !== "all") {
+    where.status = status as any;
+  }
+  // search by gender
+  if (gender && gender !== "all") {
+    where.gender = gender as any;
+  }
+  // search by name or national id or family book id
+  if (q) {
+    const searchString = q as string;
+    const searchParts = searchString.split(" ");
+    
+    if (searchParts.length > 1) {
+      // If multi-word, all words must match somewhere (AND of multiple ORs)
+      where.AND = [
+        ...(where.AND || []),
+        ...searchParts.map((part) => ({
+          OR: [
+            { firstName: { contains: part, mode: 'insensitive' } },
+            { lastName: { contains: part, mode: 'insensitive' } },
+            { fatherName: { contains: part, mode: 'insensitive' } },
+            { nationalId: { contains: part, mode: 'insensitive' } },
+            { familyBookId: { contains: part, mode: 'insensitive' } },
+          ],
+        })),
+      ];
+    } else {
+      // Single word search
+      where.OR = [
+        { firstName: { contains: searchString, mode: 'insensitive' } },
+        { lastName: { contains: searchString, mode: 'insensitive' } },
+        { fatherName: { contains: searchString, mode: 'insensitive' } },
+        { nationalId: { contains: searchString, mode: 'insensitive' } },
+        { familyBookId: { contains: searchString, mode: 'insensitive' } },
+      ];
+    }
+  }
+
   try {
     const citizens = await prisma.citizen.findMany({
+      where,
       select: {
         id: true,
         firstName: true,
@@ -36,7 +76,7 @@ export default async function CitizenSearch({ searchParams }: { searchParams: Pr
       skip,
       take: PAGE_SIZE,
     });
-    const totalCitizens = await prisma.citizen.count();
+    const totalCitizens = await prisma.citizen.count({ where });
     const totalPages = Math.max(1, Math.ceil(totalCitizens / PAGE_SIZE));
 
     return (
