@@ -1,0 +1,182 @@
+"use server"
+
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/db";
+import { Role } from "@/lib/generated/prisma/enums";
+import { eventSchema, FormValues } from "@/lib/schema";
+import { extractGovernorateCode, getUniqueNationalId } from "@/lib/utils/generate-id";
+import { parseISO } from "date-fns";
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { createAuditLog } from "./audit";
+
+export async function verifyParentId(nationalId: string, expectedGender: "MALE" | "FEMALE") {
+  try {
+
+    // التحقق من الصلاحية
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role as Role)) {
+      return {
+        success: false,
+        message: "غير مصرح لك",
+      };
+    }
+
+    // 1. التحقق من طول الرقم
+    if (nationalId.length !== 11) {
+      return { success: false, message: "الرقم الوطني يجب أن يكون 11 رقماً" };
+    }
+
+    // 2. البحث في قاعدة البيانات
+    const citizen = await prisma.citizen.findUnique({
+      where: { nationalId },
+      select: { firstName: true, lastName: true, gender: true, status: true }
+    });
+
+    // 3. معالجة الحالات
+    if (!citizen) {
+      return { success: false, message: "لا يوجد قيد بهذا الرقم الوطني" };
+    }
+
+    if (citizen.gender !== expectedGender) {
+      return { success: false, message: `هذا الرقم يعود لـ ${citizen.gender === "MALE" ? "ذكر" : "أنثى"}، يرجى التحقق!` };
+    }
+
+    if (citizen.status !== "ACTIVE") {
+      return { success: false, message: "عذراً، حالة هذا القيد لا تسمح بإجراء العملية (متوفى/موقوف)" };
+    }
+
+    return {
+      success: true,
+      name: `${citizen.firstName} ${citizen.lastName}`
+    };
+
+  } catch (error) {
+    return { success: false, message: "حدث خطأ في الخادم" };
+  }
+}
+
+export async function registerBirthEvent(data: FormValues) {
+  try {
+
+    // validate data
+    const validatedFields = eventSchema.safeParse(data);
+    if (!validatedFields.success) {
+      return { success: false, message: "بيانات المدخلات غير صالحة" };
+    }
+
+    // التحقق من الصلاحية
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role as Role)) {
+      return {
+        success: false,
+        message: "غير مصرح لك بأضافة واقعة ولادة",
+      };
+    }
+
+    // 1- جلب بيانات الأب والأم معاً في نفس اللحظة 
+    const [father, mother] = await Promise.all([
+      prisma.citizen.findUnique({ where: { nationalId: data.fatherNationalId } }),
+      prisma.citizen.findUnique({ where: { nationalId: data.motherNationalId } })
+    ]);
+    // التأكد من وجودهما في قاعدة البيانات
+    if (!father || !mother) {
+      return { success: false, message: "بيانات الوالدين غير موجودة في النظام." };
+    }
+    if (father.gender !== "MALE" || mother.gender !== "FEMALE") {
+      return { success: false, message: "خطأ أمني: تطابق الجنس للوالدين غير صحيح." };
+    }
+    // التأكد من حالة القيد
+    if (father.status !== "ACTIVE" || mother.status !== "ACTIVE") {
+      return { success: false, message: "لا يمكن إتمام العملية، أحد قيود الوالدين غير نشط." };
+    }
+
+    // 2- التوليد الآلي الإجباري للرقم الوطني 
+    const birthYear = validatedFields.data.birthDate
+    const govCode = extractGovernorateCode(validatedFields.data.placeOfBirth);
+    const babyNationalId = await getUniqueNationalId(birthYear, govCode);
+
+    // 3- (Prisma Transaction)
+    const result = await prisma.$transaction(async (tx) => {
+      // أ) إنشاء قيد المولود (وراثة البيانات آلياً)
+      const baby = await tx.citizen.create({
+        data: {
+          nationalId: babyNationalId,
+          firstName: data.babyFirstName,
+          gender: data.babyGender,
+          dateOfBirth: parseISO(validatedFields.data.birthDate),
+          placeOfBirth: data.placeOfBirth,
+          //  الوراثة الذكية من الأب
+          lastName: father.lastName,
+          fatherName: father.firstName,
+          motherName: mother.firstName,
+          religion: father.religion,
+          registryPlace: father.registryPlace,
+          registryNumber: father.registryNumber,
+          familyBookId: father.familyBookId,
+          currentAddress: father.currentAddress,
+          maritalStatus: "SINGLE",
+          status: "ACTIVE",
+          // الروابط العائلية 
+          fatherId: father.id,
+          motherId: mother.id,
+        }
+      })
+      // ب) إنشاء واقعة الولادة وربطها بالمولود
+      const event = await tx.civilEvent.create({
+        data: {
+          eventType: "BIRTH",
+          eventNumber: `BR-${Date.now()}`,
+          eventDate: parseISO(data.birthDate),
+          location: data.location,
+          documentNumber: data.documentNumber,
+          notes: `تسجيل ولادة للطفل ${data.babyFirstName} بن ${father.firstName}`,
+          status: "PENDING",
+          // الطرف الأساسي هنا هو الطفل
+          primaryCitizenId: baby.id,
+          employeeId: session.user.id,
+        }
+      })
+      return { baby, event }
+    })
+
+    await createAuditLog({
+      action: "CREATE_EVENT",
+      tableName: "CivilEvent",
+      recordId: result.event.id,
+      newData: {
+        eventType: "BIRTH",
+        eventNumber: result.event.eventNumber,
+        eventDate: result.event.eventDate.toISOString(),
+        location: result.event.location,
+        documentNumber: result.event.documentNumber,
+        notes: result.event.notes,
+        status: result.event.status,
+        primaryCitizenId: result.event.primaryCitizenId,
+      },
+      employeeId: session.user.id,
+    })
+
+    revalidatePath("/citizens");
+    revalidatePath("/events");
+    return {
+      success: true,
+      message: `تم تسجيل المولود بنجاح! رقمه الوطني: ${result.baby.nationalId}`,
+      data: result
+    };
+
+  } catch (error) {
+    console.error("Birth Registration Error:", error);
+    // التمييز بين أخطاء قاعدة البيانات (مثل تكرار الرقم الوطني) والأخطاء العامة
+    return {
+      success: false,
+      message: "حدث خطأ داخلي أثناء حفظ البيانات. يرجى المحاولة مرة أخرى."
+    };
+  }
+}

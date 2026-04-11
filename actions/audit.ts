@@ -5,6 +5,7 @@ type ActionType =
   | "CREATE"
   | "CREATE_CITIZEN"
   | "UPDATE_CITIZEN"
+  | "CREATE_EVENT"
   | "UPDATE"
   | "DELETE"
   | "STATUS_CHANGE"
