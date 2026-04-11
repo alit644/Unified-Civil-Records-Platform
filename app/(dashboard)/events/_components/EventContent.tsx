@@ -5,20 +5,34 @@ import { Baby, Heart, Scale, Skull } from "lucide-react";
 import { Column, DataTable } from "@/components/DataTable";
 import { Events } from "@/types";
 import Filters from "./Filters";
-import Drawer from "./Drawer";
+import EventDrawer from "./EventDrawer";
+import { EventType } from "@/lib/generated/prisma/enums";
+
 
 const eventTypes = [
-  { label: "ولادة", icon: Baby },
-  { label: "زواج", icon: Heart },
-  { label: "طلاق", icon: Scale },
-  { label: "وفاة", icon: Skull },
+  { label: "ولادة", value: EventType.BIRTH, icon: Baby },
+  { label: "زواج", value: EventType.MARRIAGE, icon: Heart },
+  { label: "طلاق", value: EventType.DIVORCE, icon: Scale },
+  { label: "وفاة", value: EventType.DEATH, icon: Skull },
 ];
 
 const typeFilter = ["الكل", "ولادة", "زواج", "طلاق", "وفاة"];
 
-const typeBadge = (type: string) => {
-  const map: Record<string, string> = { ولادة: "badge-blue", زواج: "badge-active", طلاق: "badge-orange", وفاة: "badge-gray" };
+const typeBadge = (type: EventType) => {
+  const map: Record<EventType, string> = { 
+    [EventType.BIRTH]: "badge-blue", 
+    [EventType.MARRIAGE]: "badge-active", 
+    [EventType.DIVORCE]: "badge-orange", 
+    [EventType.DEATH]: "badge-gray" 
+  };
   return map[type] || "badge-gray";
+};
+
+const typeLabels: Record<EventType, string> = {
+  [EventType.BIRTH]: "ولادة",
+  [EventType.MARRIAGE]: "زواج",
+  [EventType.DIVORCE]: "طلاق",
+  [EventType.DEATH]: "وفاة",
 };
 
 const statusBadge = (s: string) => {
@@ -55,7 +69,7 @@ const columns: Column<Events>[] = [
     key: "type",
     header: "النوع",
     render: (e) => (
-      <span className={typeBadge(e.type)}>{e.type}</span>
+      <span className={typeBadge(e.type as EventType)}>{typeLabels[e.type as EventType] || e.type}</span>
     ),
   },
   {
@@ -104,12 +118,15 @@ const columns: Column<Events>[] = [
 
 export default function EventContent({ initialEvents }: EventContentProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<EventType | null>(null);
   const [activeFilter, setActiveFilter] = useState("الكل");
 
   const filteredEvents = activeFilter === "الكل"
     ? initialEvents
-    : initialEvents.filter(e => e.type === activeFilter);
+    : initialEvents.filter(e => {
+        const arabicLabel = typeLabels[e.type as EventType];
+        return arabicLabel === activeFilter;
+      });
 
   return (
     <div className="space-y-6">
@@ -122,7 +139,7 @@ export default function EventContent({ initialEvents }: EventContentProps) {
       </div>
           
       {/* Drawer */}
-      <Drawer 
+      <EventDrawer 
         isOpen={drawerOpen} 
         onClose={() => { setDrawerOpen(false); setSelectedType(null); }}
         selectedType={selectedType}

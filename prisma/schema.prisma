@@ -31,44 +31,47 @@ model Employee {
 }
 
 model Citizen {
-  id             String        @id @default(cuid())
-  nationalId     String        @unique // الرقم الوطني (يجب أن يكون فريداً)
+  id               String        @id @default(cuid())
+  nationalId       String        @unique // الرقم الوطني (يجب أن يكون فريداً)
   // البيانات الشخصية
-  firstName      String // الاسم
-  lastName       String // الكنية/العائلة
-  fatherName     String // اسم الأب
-  motherName     String // اسم الأم
+  firstName        String // الاسم
+  lastName         String // الكنية/العائلة
+  fatherName       String // اسم الأب
+  motherName       String // اسم الأم
   // تفاصيل الولادة
-  placeOfBirth   String // مكان الولادة
-  dateOfBirth    DateTime // تاريخ الولادة
+  placeOfBirth     String // مكان الولادة
+  dateOfBirth      DateTime // تاريخ الولادة
   // تفاصيل القيد (مهم جداً في السجل المدني)
-  registryPlace  String // أمانة السجل المدني / مكان القيد
-  registryNumber String // رقم القيد (الخانة)
-  familyBookId   String? // رقم دفتر العائلة
+  registryPlace    String // أمانة السجل المدني / مكان القيد
+  registryNumber   String // رقم القيد (الخانة)
+  familyBookId     String? // رقم دفتر العائلة
   // الحالة الشخصية
-  gender         Gender
-  maritalStatus  MaritalStatus @default(SINGLE)
-  status         CitizenStatus @default(ACTIVE)
-  religion       String? // الديانة
-  currentAddress String?
+  gender           Gender
+  maritalStatus    MaritalStatus @default(SINGLE)
+  status           CitizenStatus @default(ACTIVE)
+  religion         String? // الديانة
+  currentAddress   String?
   // ==========================================
   // 6. الروابط الأسرية البرمجية (Self-Relations)
   // ==========================================
   fatherId         String?
   motherId         String?
   // من هو الأب ومن هي الأم؟
-  father           Citizen?  @relation("FatherToChildren", fields: [fatherId], references: [id])
-  mother           Citizen?  @relation("MotherToChildren", fields: [motherId], references: [id])
+  father           Citizen?      @relation("FatherToChildren", fields: [fatherId], references: [id])
+  mother           Citizen?      @relation("MotherToChildren", fields: [motherId], references: [id])
   // من هم الأبناء؟ (السحر الذي سيجلب لك شجرة العائلة)
-  childrenAsFather Citizen[] @relation("FatherToChildren")
-  childrenAsMother Citizen[] @relation("MotherToChildren")
+  childrenAsFather Citizen[]     @relation("FatherToChildren")
+  childrenAsMother Citizen[]     @relation("MotherToChildren")
 
   // العلاقات
-  civilEvents CivilEvent[]
+  primaryEvents   CivilEvent[] @relation("PrimaryCitizenEvent")
+  secondaryEvents CivilEvent[] @relation("SecondaryCitizenEvent")
+  
   documents   Document[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   // search
   @@index([nationalId]) // تسريع البحث بالرقم الوطني
   @@index([firstName, lastName]) // تسريع البحث بالاسم
@@ -78,19 +81,37 @@ model Citizen {
 
 model CivilEvent {
   id               String      @id @default(cuid())
-  eventNumber      String      @unique
-  type             EventType
+  eventType        EventType
+
+  // 1. التوثيق الإداري (من مخططك الرائع)
+  eventNumber      String      @unique // رقم الواقعة في السجل (متسلسل)
   status           EventStatus @default(PENDING)
-  eventDate        DateTime
-  registrationDate DateTime
-  finalDate        DateTime?
   notes            String?
-  citizenId        String
+
+// 2. التواريخ
+  eventDate        DateTime    // تاريخ حدوث الواقعة (مثال: تاريخ الولادة في المشفى)
+  registrationDate DateTime    @default(now()) // تاريخ الإدخال للنظام
+  finalDate        DateTime?   // تاريخ الاعتماد النهائي من المدير
+
+// 3. المراجع الورقية
+  location         String?     // مكان الحدوث (اسم المشفى أو المحكمة)
+  documentNumber   String?     // رقم الوثيقة المرجعية (شهادة المشفى)
+  
+// 🌟 4. أطراف الواقعة (السر البرمجي للزواج والطلاق) 🌟
+  // الطرف الأول (الطفل في الولادة، الزوج في الزواج، المتوفى في الوفاة)
+  primaryCitizenId String
+  primaryCitizen   Citizen     @relation("PrimaryCitizenEvent", fields: [primaryCitizenId], references: [id])
+
+  // الطرف الثاني (اختياري: الزوجة في الزواج/الطلاق، ولا يُستخدم في الولادة)
+  secondaryCitizenId String?
+  secondaryCitizen   Citizen?  @relation("SecondaryCitizenEvent", fields: [secondaryCitizenId], references: [id])
+
   employeeId       String
-  citizen          Citizen     @relation(fields: [citizenId], references: [id])
   employee         Employee    @relation(fields: [employeeId], references: [id])
   documents        Document[]
+
   createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 }
 
 model Document {

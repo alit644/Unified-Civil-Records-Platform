@@ -193,3 +193,36 @@ export async function quickSearchCitizens(query: string) {
     return [];
   }
 }
+
+export async function verifyCitizenById(nationalId: string) {
+  if (!nationalId || nationalId.length !== 11) {
+    return { success: false, message: "الرقم الوطني يجب أن يتكون من 11 رقم" };
+  }
+
+  try {
+    const citizen = await prisma.citizen.findUnique({
+      where: { nationalId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        fatherName: true,
+        motherName: true,
+        gender: true,
+      },
+    });
+
+    if (!citizen) {
+      return { success: false, message: "لم يتم العثور على مواطن بهذا الرقم الوطني" };
+    }
+
+    return { 
+      success: true, 
+      data: citizen,
+      message: `تم العثور على: ${citizen.firstName} ${citizen.fatherName} ${citizen.lastName}`
+    };
+  } catch (error) {
+    console.error("Verify citizen error:", error);
+    return { success: false, message: "حدث خطأ أثناء التحقق من الرقم الوطني" };
+  }
+}

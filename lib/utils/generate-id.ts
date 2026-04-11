@@ -18,8 +18,8 @@ const GOVERNORATE_CODES: Record<string, string> = {
 };
 // دالة لاستخراج رمز المحافظة من مكان الولادة
 export function extractGovernorateCode(registryPlace: string): string {
-  const govName = registryPlace.split("-")[0].trim();
-  // نبحث في القاموس، وإذا لم نجد تطابقاً نعطي رمزاً افتراضياً (مثلاً 99 للقيود الاستثنائية)
+  // استخدام regex للتقسيم بناءً على علامات مختلفة مثل - أو / أو الفاصلة (العربية والأجنبية)
+  const govName = registryPlace.split(/[-/،,]/)[0].trim();
   return GOVERNORATE_CODES[govName] || "99";
 }
 // دالة لتوليد الرقم الوطني
