@@ -5,7 +5,7 @@ import { ComponentProps } from "react";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface RHFInputProps<T extends FieldValues> extends ComponentProps<typeof Input> {
+interface RHFInputProps<T extends FieldValues> extends Omit<ComponentProps<typeof Input>, "name"> {
   control: Control<T>;
   name: Path<T>;
   label: string;

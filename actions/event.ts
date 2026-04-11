@@ -3,12 +3,13 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { Role } from "@/lib/generated/prisma/enums";
-import { eventSchema, FormValues } from "@/lib/schema";
+import { BirthEventFormValues, birthEventSchema, marriageFormSchema, MarriageFormValues } from "@/lib/schema";
 import { extractGovernorateCode, getUniqueNationalId } from "@/lib/utils/generate-id";
 import { parseISO } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { createAuditLog } from "./audit";
+import { calculateAge } from "@/lib/utils/calculateAge";
 
 export async function verifyParentId(nationalId: string, expectedGender: "MALE" | "FEMALE") {
   try {
@@ -59,11 +60,11 @@ export async function verifyParentId(nationalId: string, expectedGender: "MALE" 
   }
 }
 
-export async function registerBirthEvent(data: FormValues) {
+export async function registerBirthEvent(data: BirthEventFormValues) {
   try {
 
     // validate data
-    const validatedFields = eventSchema.safeParse(data);
+    const validatedFields = birthEventSchema.safeParse(data);
     if (!validatedFields.success) {
       return { success: false, message: "بيانات المدخلات غير صالحة" };
     }
@@ -178,5 +179,133 @@ export async function registerBirthEvent(data: FormValues) {
       success: false,
       message: "حدث خطأ داخلي أثناء حفظ البيانات. يرجى المحاولة مرة أخرى."
     };
+  }
+}
+
+export async function registerMarriageEvent(data: MarriageFormValues) {
+  try {
+    // validate data
+    const validatedFields = marriageFormSchema.safeParse(data);
+    if (!validatedFields.success) {
+      return { success: false, message: "بيانات المدخلات غير صالحة" };
+    }
+
+    // التحقق من الصلاحية
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role as Role)) {
+      return {
+        success: false,
+        message: "غير مصرح لك بأضافة واقعة ولادة",
+      };
+    }
+
+    // 1- جلب بيانات العريس والعروس معاً في نفس اللحظة 
+    const [groom, bride] = await Promise.all([
+      prisma.citizen.findUnique({ where: { nationalId: data.groomNationalId } }),
+      prisma.citizen.findUnique({ where: { nationalId: data.brideNationalId } })
+    ]);
+    // التأكد من وجودهما في قاعدة البيانات
+    if (!groom || !bride) {
+      return { success: false, message: "بيانات العريس أو العروس غير موجودة في النظام." };
+    }
+    if (groom.gender !== "MALE" || bride.gender !== "FEMALE") {
+      return { success: false, message: "خطأ أمني: تطابق الجنس للعريس والعروس غير صحيح." };
+    }
+    // التأكد من حالة القيد
+    if (groom.status !== "ACTIVE" || bride.status !== "ACTIVE") {
+      return { success: false, message: "لا يمكن إتمام العملية، أحد قيود العريس أو العروس غير نشط." };
+    }
+
+    if (groom.maritalStatus === "MARRIED" || bride.maritalStatus === "MARRIED") {
+      return { success: false, message: "أحد الطرفين مسجل كمتزوج حالياً في النظام." };
+    }
+
+    // 2- التحقق من العمر (الحد الأدنى للزواج)
+    const groomAge = calculateAge(groom.dateOfBirth);
+    const brideAge = calculateAge(bride.dateOfBirth);
+
+    if (groomAge < 18 || brideAge < 18) {
+      return { success: false, message: "الزواج غير مسموح قانوناً، يجب أن يكون عمر العريس والعروس 18 عاماً على الأقل." };
+    }
+
+    // 3- التحقق من القرابة من الدرجة الأولى (الإخوة)
+    if (
+      (groom.fatherId && groom.fatherId === bride.fatherId) ||
+      (groom.motherId && groom.motherId === bride.motherId)
+    ) {
+      return { success: false, message: "لا يمكن إتمام الزواج (يوجد صلة قرابة من الدرجة الأولى - إخوة)." };
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      // أ) تحديث بيانات الزوج
+      const updatedHusband = await tx.citizen.update({
+        where: { id: groom.id },
+        data: {
+          maritalStatus: "MARRIED",
+          familyBookId: data.familyBookId,
+        }
+      });
+
+      // ب) تحديث بيانات الزوجة
+      const updatedWife = await tx.citizen.update({
+        where: { id: bride.id },
+        data: {
+          maritalStatus: "MARRIED",
+          familyBookId: data.familyBookId,
+          registryPlace: groom.registryPlace, // وراثة أمانة السجل من الزوج
+          registryNumber: groom.registryNumber, // وراثة رقم القيد من الزوج
+        }
+      });
+
+      // ج) توثيق واقعة الزواج
+      const marriageEvent = await tx.civilEvent.create({
+        data: {
+          eventType: "MARRIAGE",
+          eventNumber: `MR-${Date.now()}`,
+          eventDate: parseISO(data.eventDate),
+          location: data.location,
+          documentNumber: data.documentNumber,
+          notes: `عقد زواج المدعو ${groom.firstName} على المدعوة ${bride.firstName}`,
+          status: "PENDING",
+          primaryCitizenId: groom.id,     // الزوج (الطرف الأول)
+          secondaryCitizenId: bride.id,      // الزوجة (الطرف الثاني)
+          employeeId: session.user.id,
+        }
+      });
+
+      await createAuditLog({
+        action: "CREATE_EVENT",
+        tableName: "CivilEvent",
+        recordId: result.marriageEvent.id,
+        newData: {
+          eventType: "MARRIAGE",
+          eventNumber: result.marriageEvent.eventNumber,
+          eventDate: result.marriageEvent.eventDate.toISOString(),
+          location: result.marriageEvent.location,
+          documentNumber: result.marriageEvent.documentNumber,
+          notes: result.marriageEvent.notes,
+          status: result.marriageEvent.status,
+          primaryCitizenId: result.marriageEvent.primaryCitizenId,
+        },
+        employeeId: session.user.id,
+      });
+
+      return { updatedHusband, updatedWife, marriageEvent };
+    });
+
+    revalidatePath("/citizens");
+    revalidatePath("/events");
+    return {
+      success: true,
+      message: "تم توثيق واقعة الزواج وتحديث قيود الزوجين بنجاح!",
+      data: result
+    };
+
+  } catch (error) {
+    console.error("Marriage Registration Error:", error);
+    return { success: false, message: "حدث خطأ داخلي أثناء تسجيل الزواج، تم التراجع عن العملية بأمان." };
   }
 }
