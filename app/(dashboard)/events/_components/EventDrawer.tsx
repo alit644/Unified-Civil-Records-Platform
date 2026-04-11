@@ -1,14 +1,9 @@
 import { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { EventType } from "@/lib/generated/prisma/enums";
-import { eventSchema, FormValues } from "@/lib/schema";
 import BirthFields from "./BirthFields";
-import { registerBirthEvent } from "@/actions/event";
-import { notify } from "@/lib/notify";
 import {
   Drawer,
   DrawerContent,
@@ -18,6 +13,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { Label } from "@/components/ui/label";
+import MarriageRegistrationFilds from "./MarriageRegistrationFilds";
 
 interface DrawerProps {
   isOpen: boolean;
@@ -34,58 +30,21 @@ const EventDrawer = ({
   setSelectedType,
   eventTypes,
 }: DrawerProps) => {
-  const form = useForm<FormValues>({
-    resolver: zodResolver(eventSchema),
-    defaultValues: {
-      eventType: EventType.BIRTH,
-      documentNumber: "",
-      location: "",
-      notes: "",
-      babyFirstName: "",
-      birthDate: "",
-      placeOfBirth: "",
-      fatherNationalId: "",
-      motherNationalId: "",
-    },
-  });
-
-  // Reset form and UI state when drawer closes
+  // Reset UI state when drawer closes
   useEffect(() => {
     if (!isOpen) {
-      form.reset();
       setSelectedType(null);
     }
-  }, [isOpen, form, setSelectedType]);
-
-  // Sync selectedType with form state
-  useEffect(() => {
-    if (selectedType) {
-      form.setValue("eventType", selectedType);
-    }
-  }, [selectedType, form]);
-
-  const onSubmit = async (data: FormValues) => {
-    console.log("Form Submitted:", data);
-    try {
-      const result = await registerBirthEvent(data);
-      if (result.success) {
-        notify(result.message, "success");
-        onClose();
-      } else {
-        notify(result.message, "error");
-      }
-    } catch (error: any) {
-      console.error(error.message);
-      notify(error.message, "error");
-    }
-  };
+  }, [isOpen, setSelectedType]);
 
 
 
   const renderFields = (type: EventType) => {
     switch (type) {
       case EventType.BIRTH:
-        return <BirthFields form={form} />;
+        return <BirthFields onSuccess={onClose} />;
+      case EventType.MARRIAGE:
+        return <MarriageRegistrationFilds onSuccess={onClose} />;
       default:
         return (
           <div className="p-4 bg-muted/50 rounded-lg text-center text-sm text-muted-foreground">
@@ -97,7 +56,7 @@ const EventDrawer = ({
 
   return (
     <Drawer open={isOpen} onOpenChange={(v) => !v && onClose()} direction="right" >
-      <DrawerContent className="w-full sm:!w-[50%] lg:!w-[40%] h-full">
+      <DrawerContent className="w-full md:!w-[60%] !max-w-none h-full">
         <DrawerHeader className="border-b bg-muted/30">
           <DrawerTitle className="text-xl font-bold text-right">تسجيل واقعة جديدة</DrawerTitle>
           <DrawerDescription className="text-right">
@@ -105,10 +64,7 @@ const EventDrawer = ({
           </DrawerDescription>
         </DrawerHeader>
 
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex-1 flex flex-col overflow-hidden"
-        >
+        <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
             {/* Event Type Selection */}
             <section>
@@ -156,8 +112,9 @@ const EventDrawer = ({
           <DrawerFooter className="p-6 border-t bg-muted/30 flex-row gap-3">
             <Button
               type="submit"
+              form={`${selectedType?.toLowerCase()}-event-form`}
               className="flex-1 shadow-lg shadow-primary/20"
-              disabled={selectedType !== EventType.BIRTH || form.formState.isSubmitting}
+              disabled={selectedType === null}
             >
               إرسال للتدقيق
             </Button>
@@ -165,7 +122,7 @@ const EventDrawer = ({
               إلغاء
             </Button>
           </DrawerFooter>
-        </form>
+        </div>
       </DrawerContent>
     </Drawer>
   );

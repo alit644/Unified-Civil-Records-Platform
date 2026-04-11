@@ -58,7 +58,7 @@ export const citizenSchema = z.object({
 
 export type CitizenFormValues = z.infer<typeof citizenSchema>;
 
-export const eventSchema = z.object({
+export const birthEventSchema = z.object({
   eventType: z.enum(EventType),
   documentNumber: z.string().min(3, "رقم الوثيقة مطلوب"),
   location: z.string().min(3 , "اسم المستفشى مطلوب"),
@@ -75,4 +75,16 @@ export const eventSchema = z.object({
 
 });
 
-export type FormValues = z.infer<typeof eventSchema>;
+export type BirthEventFormValues = z.infer<typeof birthEventSchema>;
+
+export const marriageFormSchema = z.object({
+  eventType: z.enum(EventType),
+  eventDate: z.string().min(1, "تاريخ عقد الزواج مطلوب"),
+  groomNationalId: z.string().length(11, "يجب أن يكون الرقم الوطني 11 رقم"),
+  brideNationalId: z.string().length(11, "يجب أن يكون الرقم الوطني 11 رقم"),
+  location: z.string().min(3, "مكان العقد (المحكمة) مطلوب"),
+  documentNumber: z.string().min(1, "رقم صك الزواج مطلوب"),
+  familyBookId: z.string().min(1, "رقم دفتر العائلة الجديد مطلوب"),
+});
+
+export type MarriageFormValues = z.infer<typeof marriageFormSchema>;
