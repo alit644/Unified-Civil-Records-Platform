@@ -67,7 +67,7 @@ export default function EditEmployeeDrawer({
 
   return (
     <Drawer open={open} onClose={onClose} direction="right">
-      <DrawerContent className="max-w-md overflow-y-auto px-6 py-4">
+      <DrawerContent className="!max-w-lg overflow-y-auto px-6 py-4">
         <DrawerHeader className="mb-4 border-b px-0">
           <DrawerTitle className="text-lg font-bold">
             تعديل بيانات الموظف
