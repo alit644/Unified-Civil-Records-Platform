@@ -84,7 +84,27 @@ export const marriageFormSchema = z.object({
   brideNationalId: z.string().length(11, "يجب أن يكون الرقم الوطني 11 رقم"),
   location: z.string().min(3, "مكان العقد (المحكمة) مطلوب"),
   documentNumber: z.string().min(1, "رقم صك الزواج مطلوب"),
-  familyBookId: z.string().min(1, "رقم دفتر العائلة الجديد مطلوب"),
 });
 
 export type MarriageFormValues = z.infer<typeof marriageFormSchema>;
+
+export const divorceFormSchema = z.object({
+  eventType: z.enum(EventType),
+  eventDate: z.string().min(1, "تاريخ الطلاق مطلوب"),
+  groomNationalId: z.string().length(11, "يجب أن يكون الرقم الوطني 11 رقم"),
+  brideNationalId: z.string().length(11, "يجب أن يكون الرقم الوطني 11 رقم"),
+  location: z.string().min(3, "مكان الطلاق (المحكمة) مطلوب"),
+  documentNumber: z.string().min(1, "رقم صك الطلاق مطلوب"),
+});
+
+export type DivorceFormValues = z.infer<typeof divorceFormSchema>;
+
+export const deathEventSchema = z.object({
+  eventType: z.enum(EventType),
+  eventDate: z.string().min(1, "تاريخ الوفاة مطلوب"),
+  nationalId: z.string().length(11, "يجب أن يكون الرقم الوطني 11 رقم"),
+  location: z.string().min(3, "مكان الوفاة مطلوب"),
+  documentNumber: z.string().min(1, "رقم شهادة الوفاة مطلوب"),
+});
+
+export type DeathEventFormValues = z.infer<typeof deathEventSchema>;

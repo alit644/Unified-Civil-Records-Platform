@@ -2,23 +2,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, FileText, Info, MapPin } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import { registerBirthEvent, registerMarriageEvent } from "@/actions/event";
+import { registerBirthEvent, registerDivorceEvent, registerMarriageEvent } from "@/actions/event";
 import VerifyParentInput from "./VerifyParentInput";
 import RHFInput from "@/components/RHFInput";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EventType } from "@/lib/generated/prisma/enums";
 import { notify } from "@/lib/notify";
-import RHFField from "@/components/FormFieldWrapper";
-import { marriageFormSchema, MarriageFormValues } from "@/lib/schema";
-interface IMarriageRegistrationFilds {
+import { divorceFormSchema, DivorceFormValues } from "@/lib/schema";
+interface IDivorceForm {
   onSuccess: () => void;
 }
 
-const MarriageRegistrationFilds = ({ onSuccess }: IMarriageRegistrationFilds) => {
-  const form = useForm<MarriageFormValues>({
-    resolver: zodResolver(marriageFormSchema),
+const DivorceFields = ({ onSuccess }: IDivorceForm) => {
+  const form = useForm<DivorceFormValues>({
+    resolver: zodResolver(divorceFormSchema),
     defaultValues: {
-      eventType: EventType.MARRIAGE,
+      eventType: EventType.DIVORCE,
       groomNationalId: "",
       brideNationalId: "",
       documentNumber: "",
@@ -27,18 +26,18 @@ const MarriageRegistrationFilds = ({ onSuccess }: IMarriageRegistrationFilds) =>
     },
   });
 
-  const [verifiedNames, setVerifiedNames] = useState<{ father: string; mother: string }>({
-    father: "",
-    mother: "",
+  const [verifiedNames, setVerifiedNames] = useState<{ groom: string; bride: string }>({
+    groom: "",
+    bride: "",
   });
 
   // Check if both parents are verified to unlock remaining fields
-  const isParentsVerified = !!(verifiedNames.father && verifiedNames.mother);
+  const isParentsVerified = !!(verifiedNames.groom && verifiedNames.bride);
 
-  const onSubmit = async (data: MarriageFormValues) => {
+  const onSubmit = async (data: DivorceFormValues) => {
     console.log(data);
     try {
-      const result = await registerMarriageEvent(data);
+      const result = await registerDivorceEvent(data);
       if (result.success) {
         notify(result.message, "success");
         onSuccess();
@@ -52,23 +51,23 @@ const MarriageRegistrationFilds = ({ onSuccess }: IMarriageRegistrationFilds) =>
   };
 
   return (
-    <form id="marriage-event-form" onSubmit={form.handleSubmit(onSubmit)}>
+    <form id="divorce-event-form" onSubmit={form.handleSubmit(onSubmit)}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
         <VerifyParentInput
           control={form.control}
           name="groomNationalId"
-          label="الرقم الوطني للعريس"
+          label="الرقم الوطني للزوج"
           gender="MALE"
-          onVerifySuccess={(name) => setVerifiedNames((prev) => ({ ...prev, father: name }))}
-          onVerifyClear={() => setVerifiedNames((prev) => ({ ...prev, father: "" }))}
+          onVerifySuccess={(name) => setVerifiedNames((prev) => ({ ...prev, groom: name }))}
+          onVerifyClear={() => setVerifiedNames((prev) => ({ ...prev, groom: "" }))}
         />
         <VerifyParentInput
           control={form.control}
           name="brideNationalId"
-          label="الرقم الوطني للعروس"
+          label="الرقم الوطني للزوجة"
           gender="FEMALE"
-          onVerifySuccess={(name) => setVerifiedNames((prev) => ({ ...prev, mother: name }))}
-          onVerifyClear={() => setVerifiedNames((prev) => ({ ...prev, mother: "" }))}
+          onVerifySuccess={(name) => setVerifiedNames((prev) => ({ ...prev, bride: name }))}
+          onVerifyClear={() => setVerifiedNames((prev) => ({ ...prev, bride: "" }))}
         />
       </div>
 
@@ -78,7 +77,7 @@ const MarriageRegistrationFilds = ({ onSuccess }: IMarriageRegistrationFilds) =>
           <RHFInput
             control={form.control}
             name="eventDate"
-            label="تاريخ عقد الزواج"
+            label="تاريخ الطلاق"
             type="date"
             className="h-9"
             disabled={!isParentsVerified}
@@ -87,9 +86,9 @@ const MarriageRegistrationFilds = ({ onSuccess }: IMarriageRegistrationFilds) =>
           <RHFInput
             control={form.control}
             name="location"
-            label="مكان العقد (المحكمة)"
-            placeholder="أدخل مكان العقد (المحكمة)"
-            className="h-9"
+            label="مكان الطلاق (المحكمة)"
+            placeholder="أدخل مكان الطلاق (المحكمة)"
+            className="h-9" 
             disabled={!isParentsVerified}
             icon={Info}
           />
@@ -101,10 +100,10 @@ const MarriageRegistrationFilds = ({ onSuccess }: IMarriageRegistrationFilds) =>
           </div>
           <div className="grid grid-cols-1 gap-3">
             <RHFInput
-              control={form.control}
+              control={form.control}  
               name="documentNumber"
-              label="رقم الوثيقة"
-              placeholder="الشهادة الورقية"
+              label="رقم صك الطلاق"
+              placeholder="أدخل رقم صك الطلاق"
               className="h-9"
               disabled={!isParentsVerified}
               icon={FileText}
@@ -122,4 +121,4 @@ const MarriageRegistrationFilds = ({ onSuccess }: IMarriageRegistrationFilds) =>
   );
 };
 
-export default MarriageRegistrationFilds;
+export default DivorceFields;

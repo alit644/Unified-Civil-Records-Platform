@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/drawer";
 import { Label } from "@/components/ui/label";
 import MarriageRegistrationFilds from "./MarriageRegistrationFilds";
+import DivorceFields from "./DivorceFields";
+import DeathFields from "./DeathFields";
 
 interface DrawerProps {
   isOpen: boolean;
@@ -45,6 +47,10 @@ const EventDrawer = ({
         return <BirthFields onSuccess={onClose} />;
       case EventType.MARRIAGE:
         return <MarriageRegistrationFilds onSuccess={onClose} />;
+      case EventType.DIVORCE:
+        return <DivorceFields onSuccess={onClose} />;
+      case EventType.DEATH:
+        return <DeathFields onSuccess={onClose} />;
       default:
         return (
           <div className="p-4 bg-muted/50 rounded-lg text-center text-sm text-muted-foreground">
