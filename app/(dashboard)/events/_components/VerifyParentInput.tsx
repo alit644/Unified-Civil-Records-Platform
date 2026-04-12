@@ -11,7 +11,7 @@ interface VerifyParentInputProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
   label: string;
-  gender: "MALE" | "FEMALE";
+  gender?: "MALE" | "FEMALE" | "ANY";
   onVerifySuccess: (name: string) => void;
   onVerifyClear: () => void;
 }
