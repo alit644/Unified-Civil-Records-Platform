@@ -8,6 +8,8 @@ export const AUDIT_ACTION_MAP: Record<string, { label: string; color: string }> 
   CREATE_CITIZEN: { label: "إضافة مواطن", color: "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
   UPDATE_CITIZEN: { label: "تعديل مواطن", color: "bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200" },
   CREATE_EVENT: { label: "إضافة واقعة", color: "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
+  APPROVE: { label: "اعتماد واقعة", color: "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
+  REJECT: { label: "رفض واقعة", color: "bg-red-100 text-red-800 hover:bg-red-100 border-red-200" },
 };
 
 // 2. قاموس أدوار الموظفين (Roles)
@@ -34,4 +36,17 @@ export const STATUS_CITIZEN_MAP: Record<string, { label: string; color: string }
   INACTIVE: { label: "موقوف", color: " bg-rose-100 text-rose-800 hover:bg-rose-100 border-rose-200" },
   PENDING: { label: "بانتظار التدقيق", color: " bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200" },
   DECEASED: { label: "متوفى", color: " bg-red-100 text-red-800 hover:bg-red-100 border-red-200" },
+};
+
+export const EVENT_TYPE_MAP: Record<string, { label: string; color: string }> = {
+  BIRTH: { label: "ولادة", color: " bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
+  MARRIAGE: { label: "زواج", color: " bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200" },
+  DIVORCE: { label: "طلاق", color: " bg-orange-100 text-orange-800 hover:bg-orange-100 border-orange-200" },
+  DEATH: { label: "وفاة", color: " bg-red-100 text-red-800 hover:bg-red-100 border-red-200" },
+};
+
+export const EVENT_STATUS_MAP: Record<string, { label: string; color: string }> = {
+  PENDING: { label: "بانتظار التدقيق", color: " bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200" },
+  APPROVED: { label: "مقبول", color: " bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
+  REJECTED: { label: "مرفوض", color: " bg-red-100 text-red-800 hover:bg-red-100 border-red-200" },
 };
