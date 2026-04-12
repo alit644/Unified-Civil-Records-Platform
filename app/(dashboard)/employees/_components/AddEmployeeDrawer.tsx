@@ -69,7 +69,7 @@ export default function AddEmployeeDrawer({
 
   return (
     <Drawer open={open} onClose={handleClose} direction="right">
-      <DrawerContent className="max-w-md px-6 py-4 overflow-y-auto">
+      <DrawerContent className="!max-w-lg px-6 py-4 overflow-y-auto">
         <DrawerHeader className="px-0 border-b mb-4">
              <DrawerTitle className="text-lg font-bold">إضافة موظف جديد</DrawerTitle>
         </DrawerHeader>
