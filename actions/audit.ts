@@ -14,7 +14,8 @@ type ActionType =
   | "APPROVE"
   | "REJECT"
   | "APPROVE_EVENT"
-  | "REJECT_EVENT";
+  | "REJECT_EVENT"
+  | "DOCUMENT_EXTRACTED";
 
 interface LogParams {
   action: ActionType;

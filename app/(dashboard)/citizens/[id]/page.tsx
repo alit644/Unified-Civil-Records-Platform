@@ -7,6 +7,7 @@ import { ar } from "date-fns/locale";
 import { StatePlaceholder } from "@/components/shared/StatePlaceholder";
 import { AlertCircle, RefreshCcw } from "lucide-react";
 import { EVENT_TYPE_MAP, EVENT_STATUS_MAP } from "@/lib/mappings";
+import { MBreadcrumbs } from "@/components/shared/MBreadcrumbs";
 
 export default async function CitizenProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -93,6 +94,12 @@ export default async function CitizenProfilePage({ params }: { params: Promise<{
 
     return (
     <div className="space-y-6">
+      <MBreadcrumbs 
+        paths={[
+          { label: "بحث المواطنين", href: "/citizens" },
+          { label: `${citizen?.firstName} ${citizen?.lastName}` }
+        ]} 
+      />
       {/* Profile header (Server component part for branding/static info) */}
       <div className="bg-card rounded-xl border p-6 shadow-sm flex flex-wrap items-center justify-between gap-6 overflow-hidden relative group">
         {/* Subtle background decoration */}

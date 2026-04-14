@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import EditCitizenDrawer from "./EditCitizenDrawer";
 import { Button } from "@/components/ui/button";
 import { useCitizenFilters } from "@/hooks/use-citizen-filters";
+import RecordExtractAction from "./RecordExtractAction";
 
 interface CitizensManagerProps {
   initialCitizens: Citizen[];
@@ -58,13 +59,23 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
       ),
     },
     {
-      key: "neighborhood",
-      header: "الحي",
+      key: "registry",
+      header: "محل ورقم القيد",
       render: (c) => (
-        <span >
-          {c.currentAddress?.split(" ").slice(0, 2).join(" ") || "غير محدد"}
-        </span>
+        <div className="flex flex-col">
+          <span className="text-xs font-bold">{c.registryPlace}</span>
+          <span className="text-[10px] text-muted-foreground">خـ / {c.registryNumber}</span>
+        </div>
       ),
+    },
+    {
+      key: "age",
+      header: "العمر",
+      render: (c) => {
+        const birthDate = new Date(c.dateOfBirth);
+        const age = new Date().getFullYear() - birthDate.getFullYear();
+        return <span className="text-xs">{age} سنة</span>;
+      },
     },
     {
       key: "marital",
@@ -99,9 +110,7 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
             setSelectedCitizen(c);
             setEditDrawerOpen(true);
           }}>تعديل</Button>
-          <Button variant="outline" size="sm" className="bg-secondary/10 px-2 py-1 rounded border border-primary/20 text-primary text-[10px] sm:text-xs hover:bg-primary/5 transition-colors">
-            بيان قيد فردي
-          </Button>
+        <RecordExtractAction nationalId={c.nationalId} />
         </div>
       ),
     },

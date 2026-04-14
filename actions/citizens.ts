@@ -80,7 +80,7 @@ export async function createCitizen(data: CitizenFormValues) {
 
 }
 
-export async function updateCitizen(data: CitizenFormValues , id: string) {
+export async function updateCitizen(data: CitizenFormValues, id: string) {
   try {
     // validate data
     const validatedFields = citizenSchema.safeParse(data);
@@ -153,7 +153,7 @@ export async function quickSearchCitizens(query: string) {
   if (!query || query.length < 2) return [];
 
   const searchParts = query.trim().replace(/\s+/g, ' ').split(" ");
-  
+
   const where: any = {};
   if (searchParts.length > 1) {
     where.AND = searchParts.map((part) => ({
@@ -216,8 +216,8 @@ export async function verifyCitizenById(nationalId: string) {
       return { success: false, message: "لم يتم العثور على مواطن بهذا الرقم الوطني" };
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       data: citizen,
       message: `تم العثور على: ${citizen.firstName} ${citizen.fatherName} ${citizen.lastName}`
     };
@@ -225,4 +225,148 @@ export async function verifyCitizenById(nationalId: string) {
     console.error("Verify citizen error:", error);
     return { success: false, message: "حدث خطأ أثناء التحقق من الرقم الوطني" };
   }
-}
+}
+
+export async function getCivilRecordExtract(nationalId: string) {
+  if (!nationalId || nationalId.length !== 11) {
+    return { success: false, message: "الرقم الوطني يجب أن يتكون من 11 رقم" };
+  }
+
+  try {
+    // التحقق من الصلاحية
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session || !["ADMIN", "OFFICER"].includes(session.user.role as Role)) {
+      return {
+        success: false,
+        message: "غير مصرح لك",
+      };
+    }
+
+    // 1. جلب المواطن مع بيانات والديه، وكل الواقعات المرتبطة به
+    const citizen = await prisma.citizen.findUnique({
+      where: { nationalId },
+      include: {
+        // جلب أسماء الوالدين لطباعتها في البيان
+        father: { select: { firstName: true, lastName: true, nationalId: true } },
+        mother: { select: { firstName: true, lastName: true, nationalId: true } },
+        // جلب الواقعات التي هو طرف أساسي فيها (ولادة، زواجه، طلاقه، وفاته)
+        primaryEvents: {
+          include: {
+            secondaryCitizen: { select: { firstName: true, lastName: true } }
+          }
+        },
+        // جلب الواقعات التي هو طرف ثانوي فيها (مثلاً: هي الزوجة في عقد زواج)
+        secondaryEvents: {
+          include: {
+            primaryCitizen: { select: { firstName: true, lastName: true } }
+          }
+        }
+      }
+    });
+
+    if (!citizen) {
+      return { success: false, message: "لم يتم العثور على قيود مطابقة لهذا الرقم." };
+    }
+
+    // 2. تجميع الواقعات وترتيبها زمنياً
+    const allEvents = [...citizen.primaryEvents, ...citizen.secondaryEvents];
+
+    const timeline = allEvents.sort((a, b) => {
+      return new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime();
+    });
+
+    // 3. إنشاء سجل رسمي للوثيقة في قاعدة البيانات (الأرشفة الرقمية)
+    const archiveNumber = `SC-MCI-${citizen.nationalId.slice(0, 4)}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    
+    await prisma.document.create({
+      data: {
+        archiveNumber,
+        type: "INDIVIDUAL_EXTRACT",
+        citizenId: citizen.id,
+        employeeId: session.user.id,
+        issuedAt: new Date(),
+      }
+    });
+
+    const recordData = {
+      documentId: archiveNumber, // الرقم الموحد الذي سيستخدم في كل مكان
+      personalInfo: {
+        nationalId: citizen.nationalId,
+        fullName: `${citizen.firstName} ${citizen.lastName}`,
+        fatherName: citizen.father ? `${citizen.father.firstName} ${citizen.father.lastName}` : "غير مسجل",
+        motherName: citizen.mother ? `${citizen.mother.firstName} ${citizen.mother.lastName}` : "غير مسجل",
+        gender: citizen.gender === "MALE" ? "ذكر" : "أنثى",
+        // placeAndDateOfBirth: `${citizen.placeOfBirth} - ${new Date(citizen.dateOfBirth).toLocaleDateString('ar-SY')}`,
+        birthDate: new Date(citizen.dateOfBirth).toLocaleDateString('en-GB'),
+        placeOfBirth: citizen.placeOfBirth,
+        registryDetails: `أمانة ${citizen.registryPlace} - خانة ${citizen.registryNumber}`,
+        maritalStatus: citizen.maritalStatus,
+        status: citizen.status,
+      },
+      eventsHistory: timeline
+    };
+
+    await createAuditLog({
+      action: "DOCUMENT_EXTRACTED",
+      tableName: "citizen",
+      recordId: citizen.id,
+      newData: {
+        nationalId: citizen.nationalId,
+        fullName: `${citizen.firstName} ${citizen.lastName}`,
+      },
+      employeeId: session.user.id,
+    });
+
+    return { success: true, data: recordData , message: "تم استخراج البيان بنجاح" };
+  } catch (error) {
+    console.error("Civil Record Error:", error);
+    return { success: false, message: "حدث خطأ أثناء استخراج البيان." };
+  }
+}
+
+// دالة التحقق العامة (بدون تسجيل دخول)
+export async function getPublicVerificationData(nationalId: string) {
+  if (!nationalId || nationalId.length !== 11) {
+    return { success: false, message: "رقم وطني غير صالح" };
+  }
+
+  try {
+    const citizen = await prisma.citizen.findUnique({
+      where: { nationalId },
+      select: {
+        firstName: true,
+        lastName: true,
+        fatherName: true,
+        motherName: true,
+        gender: true,
+        dateOfBirth: true,
+        placeOfBirth: true,
+        registryPlace: true,
+        registryNumber: true,
+        status: true,
+      }
+    });
+
+    if (!citizen) {
+      return { success: false, message: "هذه الوثيقة غير مدرجة في سجلاتنا." };
+    }
+
+    return {
+      success: true,
+      data: {
+        fullName: `${citizen.firstName} ${citizen.lastName}`,
+        fatherName: citizen.fatherName,
+        motherName: citizen.motherName,
+        birthDate: new Date(citizen.dateOfBirth).toLocaleDateString('en-GB'),
+        placeOfBirth: citizen.placeOfBirth,
+        registryDetails: `أمانة ${citizen.registryPlace} - ${citizen.registryNumber}`,
+      }
+    };
+  } catch (error) {
+    console.error("Public Verification Error:", error);
+    return { success: false, message: "حدث خطأ أثناء التحقق من البيانات." };
+  }
+}

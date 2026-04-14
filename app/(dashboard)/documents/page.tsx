@@ -1,4 +1,5 @@
 import DocumentManager from "./_components/DocumentManager";
+import { MBreadcrumbs } from "@/components/shared/MBreadcrumbs";
 
 
 const recentDocs = [
@@ -12,6 +13,7 @@ export default function DocumentIssuancePage() {
 
   return (
     <div className="space-y-6">
+      <MBreadcrumbs paths={[{ label: "إصدار الوثائق" }]} />
       <DocumentManager recentDocs={recentDocs} />
     </div>
   );

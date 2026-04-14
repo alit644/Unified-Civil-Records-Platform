@@ -9,6 +9,7 @@ import { StatePlaceholder } from "@/components/shared/StatePlaceholder";
 import { Search } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { MBreadcrumbs } from "@/components/shared/MBreadcrumbs";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -62,6 +63,12 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
+      <MBreadcrumbs 
+        paths={[
+          { label: "الواقعات المدنية", href: "/events" },
+          { label: `تفاصيل الواقعة (${event.eventNumber})` }
+        ]} 
+      />
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-4 rounded-xl border shadow-sm sticky top-0 z-10">
         <div className="flex items-center gap-4">
