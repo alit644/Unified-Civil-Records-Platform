@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { StatsContainer, ListContainer } from "./_components/EventContainers";
 import { StatsSkeleton, TableSkeleton } from "./_components/Skeletons";
+import { MBreadcrumbs } from "@/components/shared/MBreadcrumbs";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,8 @@ export default async function CivilEventsPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
+      <MBreadcrumbs paths={[{ label: "الواقعات المدنية" }]} />
+      
       {/* قسم الإحصائيات يحمل بشكل منفصل */}
       <Suspense fallback={<StatsSkeleton />}>
         <StatsContainer />

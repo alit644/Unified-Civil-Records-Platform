@@ -10,6 +10,7 @@ export const AUDIT_ACTION_MAP: Record<string, { label: string; color: string }> 
   CREATE_EVENT: { label: "إضافة واقعة", color: "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
   APPROVE: { label: "اعتماد واقعة", color: "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
   REJECT: { label: "رفض واقعة", color: "bg-red-100 text-red-800 hover:bg-red-100 border-red-200" },
+  DOCUMENT_EXTRACTED: { label: "استخراج بيان", color: "bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-200" },
 };
 
 // 2. قاموس أدوار الموظفين (Roles)

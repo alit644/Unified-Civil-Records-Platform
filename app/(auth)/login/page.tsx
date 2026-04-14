@@ -15,7 +15,7 @@ import { useLogin } from "@/hooks/useLogin";
 
 const Login = () => {
   const { form, loading, error, handleLogin } = useLogin();
-  
+  const year = new Date().getFullYear();
   return (
     <div
       dir="rtl"
@@ -139,7 +139,7 @@ const Login = () => {
 
         {/* Footer */}
         <p className="text-center text-xs text-white/50">
-          © ٢٠٢٤ دائرة الأحوال المدنية والجوازات — جميع الحقوق محفوظة
+          السحل المدني الرقمي الموحد - {year} جميع الحقوق محفوظة ©
         </p>
       </div>
     </div>

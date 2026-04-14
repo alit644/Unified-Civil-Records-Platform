@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { toast } from "sonner";
 
-type NotifyType = "success" | "error";
+type NotifyType = "success" | "error" | "info";
 
 type NotifyOptions = {
   description?: string;
@@ -26,6 +26,16 @@ const STYLES: Record<NotifyType, CSSProperties> = {
     border: "1px solid #ef444433",
     background: "rgba(254, 242, 242, 0.95)",
     boxShadow: "0 10px 15px -3px rgba(239, 68, 68, 0.1), 0 4px 6px -4px rgba(239, 68, 68, 0.1)",
+    borderRadius: "12px",
+    fontFamily: "var(--font-cairo)",
+    padding: "12px 20px",
+    backdropFilter: "blur(8px)",
+  },
+  info: {
+    border: "1px solid #3b82f633",
+    background: "rgba(239, 246, 255, 0.95)",
+    color: "#1e40af",
+    boxShadow: "0 10px 15px -3px rgba(59, 130, 246, 0.1), 0 4px 6px -4px rgba(59, 130, 246, 0.1)",
     borderRadius: "12px",
     fontFamily: "var(--font-cairo)",
     padding: "12px 20px",
