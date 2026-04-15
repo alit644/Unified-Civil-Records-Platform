@@ -15,7 +15,6 @@ interface PageProps {
 }
 
 
-
 export default async function CitizenSearchPage({ searchParams }: PageProps) {
   const filters = await searchParams;
 

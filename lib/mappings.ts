@@ -11,6 +11,7 @@ export const AUDIT_ACTION_MAP: Record<string, { label: string; color: string }> 
   APPROVE: { label: "اعتماد واقعة", color: "bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
   REJECT: { label: "رفض واقعة", color: "bg-red-100 text-red-800 hover:bg-red-100 border-red-200" },
   DOCUMENT_EXTRACTED: { label: "استخراج بيان", color: "bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-200" },
+  ISSUE_DOCUMENT: { label: "إصدار بيان", color: "bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-200" },
 };
 
 // 2. قاموس أدوار الموظفين (Roles)
@@ -50,4 +51,14 @@ export const EVENT_STATUS_MAP: Record<string, { label: string; color: string }> 
   PENDING: { label: "بانتظار التدقيق", color: " bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200" },
   APPROVED: { label: "مقبول", color: " bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
   REJECTED: { label: "مرفوض", color: " bg-red-100 text-red-800 hover:bg-red-100 border-red-200" },
+};
+
+export const DOCUMENT_TYPE_MAP: Record<string, { label: string; color: string }> = {
+  BIRTH: { label: "شهادة ميلاد", color: " bg-green-100 text-green-800 hover:bg-green-100 border-green-200" },
+  MARRIAGE: { label: "شهادة زواج", color: " bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200" },
+  DIVORCE: { label: "شهادة طلاق", color: " bg-orange-100 text-orange-800 hover:bg-orange-100 border-orange-200" },
+  DEATH: { label: "شهادة وفاة", color: " bg-red-100 text-red-800 hover:bg-red-100 border-red-200" },
+  RESIDENCE: { label: "سند إقامة", color: " bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-200" },
+  FAMILY_BOOK: { label: "قيد عائلي", color: " bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-200" },
+  INDIVIDUAL_EXTRACT: { label: "قيد فردي", color: " bg-purple-100 text-purple-800 hover:bg-purple-100 border-purple-200" },
 };
