@@ -1,16 +1,22 @@
 import prisma from "@/lib/db";
 import { DOCUMENT_TYPE_MAP } from "@/lib/mappings";
 
-export async function getRecentDocuments(limit = 20) {
+export async function getRecentDocuments(page = 1, limit = 10) {
   try {
-    const docs = await prisma.document.findMany({
-      take: limit,
-      orderBy: { issuedAt: "desc" },
-      include: {
-        citizen: { select: { firstName: true, lastName: true, nationalId: true } },
-        employee: { select: { name: true } },
-      },
-    });
+    const skip = (page - 1) * limit;
+
+    const [docs, totalCount] = await Promise.all([
+      prisma.document.findMany({
+        skip,
+        take: limit,
+        orderBy: { issuedAt: "desc" },
+        include: {
+          citizen: { select: { firstName: true, lastName: true, nationalId: true } },
+          employee: { select: { name: true } },
+        },
+      }),
+      prisma.document.count(),
+    ]);
 
     const recentDocs = docs.map((doc) => ({
       id: doc.id,
@@ -26,6 +32,8 @@ export async function getRecentDocuments(limit = 20) {
       message: "تم جلب الوثائق بنجاح",
       success: true,
       data: recentDocs,
+      totalPages: Math.ceil(totalCount / limit) || 1,
+      currentPage: page,
     };
   } catch (error) {
     console.error("getRecentDocuments Error:", error);
