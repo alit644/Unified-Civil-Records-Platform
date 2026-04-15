@@ -3,7 +3,6 @@ import { Column, DataTable } from "@/components/DataTable";
 import { MetricCard } from "@/components/MetricCard";
 import QuickActions from "@/components/QuickActions";
 import { auth } from "@/lib/auth";
-import { Event } from "@/types";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
@@ -22,7 +21,7 @@ const typeBadge = (type: string) => {
   return map[type] || "badge-gray";
 };
 
-const columns: Column<Event>[] = [
+const columns: Column<typeof recentEvents[0]>[] = [
   {
     key: "type",
     header: "النوع",
