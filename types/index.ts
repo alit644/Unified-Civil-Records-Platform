@@ -89,3 +89,14 @@ export interface IUser {
   role: string;
   updatedAt: Date;
 }
+
+export interface RecentDoc {
+  type: string;
+  citizen: string;
+  nid: string;
+  time: string;
+  employee: string;
+  archiveNumber: string;
+  id: string;
+  issuedAt: Date;
+}

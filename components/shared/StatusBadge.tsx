@@ -1,9 +1,9 @@
 import { Badge } from "@/components/ui/badge";
-import { AUDIT_ACTION_MAP, EVENT_STATUS_MAP, EVENT_TYPE_MAP, MARITAL_STATUS_MAP, ROLE_MAP, STATUS_CITIZEN_MAP, STATUS_MAP } from "@/lib/mappings";
+import { AUDIT_ACTION_MAP, DOCUMENT_TYPE_MAP, EVENT_STATUS_MAP, EVENT_TYPE_MAP, MARITAL_STATUS_MAP, ROLE_MAP, STATUS_CITIZEN_MAP, STATUS_MAP } from "@/lib/mappings";
 import { cn } from "@/lib/utils";
 
 // تحديد الأنواع المدعومة
-type BadgeCategory = "audit" | "role" | "status" | "marital" | "status_citizen" | "event_type" | "event_status" ;
+type BadgeCategory = "audit" | "role" | "status" | "marital" | "status_citizen" | "event_type" | "event_status" | "document_type";
 
 interface StatusBadgeProps {
   value: string | boolean; 
@@ -40,6 +40,9 @@ export function StatusBadge({ value, category, className }: StatusBadgeProps) {
       break;
     case "event_status":
       mapData = EVENT_STATUS_MAP[stringValue];
+      break;
+    case "document_type":
+      mapData = DOCUMENT_TYPE_MAP[stringValue];
       break;
   }
 

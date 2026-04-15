@@ -1,15 +1,15 @@
 import DocumentManager from "./_components/DocumentManager";
 import { MBreadcrumbs } from "@/components/shared/MBreadcrumbs";
+import { getRecentDocuments } from "@/lib/services/document.service";
 
+//TODO : handle error
+//TODO : handle loading
+//TODO : handle empty state
+//TODO : handle pagination
 
-const recentDocs = [
-  { type: "سند إقامة", citizen: "محمد سامر الشمري", nid: "٩٩٨١٢٣٤٥٦٧", time: "١٠:٣٢", employee: "م. أحمد" },
-  { type: "شهادة ميلاد", citizen: "ليان محمد العبادي", nid: "٩٩٨٧٦٥٤٣٢١", time: "١٠:١٥", employee: "سارة الحسن" },
-  { type: "قيد عائلي", citizen: "عمر أحمد الشمري", nid: "٩٩٧١١٢٢٣٣٤", time: "٠٩:٤٥", employee: "م. أحمد" },
-  { type: "شهادة زواج", citizen: "فاطمة أحمد العبادي", nid: "٩٩٨٧٦٥٤٣٢١", time: "٠٩:٢٠", employee: "نور العلي" },
-];
-
-export default function DocumentIssuancePage() {
+export default async function DocumentIssuancePage() {
+  const result = await getRecentDocuments();
+  const recentDocs = result.data || [];
 
   return (
     <div className="space-y-6">
