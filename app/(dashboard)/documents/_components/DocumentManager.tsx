@@ -8,25 +8,33 @@ import { QuickIssue, CitizenSearchResult } from "./QuickIssue";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { toast } from "sonner";
 import { issueDocumentAction } from "@/actions/document-issue";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { GenericDocData } from "./GenericDocumentPDF";
 import PDFModal from "./PDFModal";
 import { RecentDoc } from "@/types";
+import MPagination from "@/components/shared/MPagination";
 
 interface DocumentManagerProps {
   recentDocs: RecentDoc[];
+  totalPages: number;
+  currentPage: number;
 }
 
-export default function DocumentManager({ recentDocs }: DocumentManagerProps) {
+export default function DocumentManager({ recentDocs, totalPages, currentPage }: DocumentManagerProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
   const [selectedDoc, setSelectedDoc] = useState("سند إقامة");
   const [selectedCitizen, setSelectedCitizen] = useState<CitizenSearchResult | null>(null);
-  
+
   const [isIssuing, setIsIssuing] = useState(false);
   const [issuedDocData, setIssuedDocData] = useState<GenericDocData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleIssue = async () => {
     if (!selectedCitizen) return;
-    
+
     setIsIssuing(true);
     const result = await issueDocumentAction(selectedCitizen.id, selectedDoc);
     setIsIssuing(false);
@@ -71,7 +79,7 @@ export default function DocumentManager({ recentDocs }: DocumentManagerProps) {
       header: "أصدرها",
       render: (e) => <span className="text-muted-foreground">{e.employee}</span>,
     },
-    
+
   ];
 
   return (
@@ -90,12 +98,23 @@ export default function DocumentManager({ recentDocs }: DocumentManagerProps) {
           <h4 className="font-bold">أحدث الوثائق الصادرة اليوم</h4>
         </div>
         <DataTable columns={columns} data={recentDocs as any} />
+        {totalPages > 1 && (
+          <MPagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={(page) => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("page", page.toString());
+              router.replace(`${pathname}?${params.toString()}`);
+            }}
+          />
+        )}
       </div>
 
-      <PDFModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        docData={issuedDocData} 
+      <PDFModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        docData={issuedDocData}
       />
     </div>
   );
