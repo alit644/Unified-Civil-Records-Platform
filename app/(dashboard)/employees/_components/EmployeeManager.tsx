@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { Column, DataTable } from "@/components/DataTable";
 import { Employee } from "@/types";
@@ -10,6 +9,7 @@ import AddEmployeeDrawer from "./AddEmployeeDrawer";
 import EditEmployeeDrawer from "./EditEmployeeDrawer";
 import MPagination from "@/components/shared/MPagination";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { useEmployeeFilters } from "@/hooks/use-employee-filters";
 
 interface EmployeeManagerProps {
   initialEmployees: Employee[];
@@ -22,18 +22,16 @@ export default function EmployeeManager({
   currentPage,
   totalPages,
 }: EmployeeManagerProps) {
-  const router = useRouter();
+  const { setPage } = useEmployeeFilters();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editDrawerOpen, setEditDrawerOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [employees, setEmployees] = useState(initialEmployees);
   const { toggleStatus, isPending } = useToggleEmployeeStatus(setEmployees);
+
   useEffect(() => {
     setEmployees(initialEmployees);
   }, [initialEmployees]);
-  const handlePageChange = (page: number) => {
-    router.push(`/employees?page=${page}`);
-  };
 
   const columns = useMemo<Column<Employee>[]>(
     () => [
@@ -115,25 +113,30 @@ export default function EmployeeManager({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border bg-card shadow-sm">
-        <div className="flex items-center justify-between border-b p-5">
-          <h4 className="font-bold">إدارة الموظفين</h4>
+      <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between border-b p-5 bg-secondary/10">
+          <div className="flex items-center gap-2">
+             <h4 className="font-bold">إدارة الموظفين</h4>
+             <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">السجل النشط</span>
+          </div>
           <button
             onClick={() => setDrawerOpen(true)}
             type="button"
             aria-label="إضافة موظف جديد"
-            className="flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            className="flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 active:scale-95"
           >
             <Plus className="h-4 w-4" /> إضافة موظف جديد
           </button>
         </div>
         <DataTable columns={columns} data={employees} />
         {totalPages > 1 && (
+          <div className="border-t bg-secondary/5 flex justify-end">
           <MPagination
             totalPages={totalPages}
             currentPage={currentPage}
-            onPageChange={handlePageChange}
+            onPageChange={setPage}
           />
+          </div>
         )}
       </div>
 
@@ -144,7 +147,8 @@ export default function EmployeeManager({
           setEmployees((current) => [employee, ...current]);
         }}
       />
-      {selectedEmployee ? (
+      
+      {selectedEmployee && (
         <EditEmployeeDrawer
           open={editDrawerOpen}
           onClose={() => {
@@ -153,7 +157,7 @@ export default function EmployeeManager({
           }}
           selectedEmployee={selectedEmployee}
         />
-      ) : null}
+      )}
     </div>
   );
 }

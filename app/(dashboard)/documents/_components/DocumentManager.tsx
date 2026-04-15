@@ -2,59 +2,49 @@
 "use client";
 
 import { useState } from "react";
-import { Printer, Download } from "lucide-react";
-import { generateDocPdf } from "@/lib/generateDocPdf";
 import { Column, DataTable } from "@/components/DataTable";
 import { Doc } from "@/types";
-import { Button } from "@/components/ui/button";
-import { RecentDoc } from "./constants";
-import { QuickIssue } from "./QuickIssue";
-import { DocumentPreview } from "./DocumentPreview";
+import { QuickIssue, CitizenSearchResult } from "./QuickIssue";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { toast } from "sonner";
+import { issueDocumentAction } from "@/actions/document-issue";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { GenericDocData } from "./GenericDocumentPDF";
+import PDFModal from "./PDFModal";
+import { RecentDoc } from "@/types";
+import MPagination from "@/components/shared/MPagination";
 
 interface DocumentManagerProps {
   recentDocs: RecentDoc[];
+  totalPages: number;
+  currentPage: number;
 }
 
-export default function DocumentManager({ recentDocs }: DocumentManagerProps) {
+export default function DocumentManager({ recentDocs, totalPages, currentPage }: DocumentManagerProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
   const [selectedDoc, setSelectedDoc] = useState("سند إقامة");
-  const [issued, setIssued] = useState(false);
-  const [citizenFound, setCitizenFound] = useState(false);
-  const [downloading, setDownloading] = useState(false);
+  const [selectedCitizen, setSelectedCitizen] = useState<CitizenSearchResult | null>(null);
 
-  const handleDownloadPdf = async () => {
-    setDownloading(true);
-    try {
-      await generateDocPdf({
-        type: selectedDoc,
-        citizenName: "محمد سامر يوسف الشمري",
-        nid: "٩٩٨١٢٣٤٥٦٧",
-        address: "الجبيهة — شارع الجامعة ٤٥",
-        neighborhood: "الجبيهة",
-        issueDate: "٢٠/١١/٢٠٢٤",
-        employee: "م. أحمد الخالدي",
-        refNumber: "DOC-2024-00187",
-      });
-    } catch (e) {
-      console.error("PDF generation error:", e);
-    } finally {
-      setDownloading(false);
-    }
-  };
+  const [isIssuing, setIsIssuing] = useState(false);
+  const [issuedDocData, setIssuedDocData] = useState<GenericDocData | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleDownloadRecentPdf = async (doc: RecentDoc) => {
-    try {
-      await generateDocPdf({
-        type: doc.type,
-        citizenName: doc.citizen,
-        nid: doc.nid,
-        address: "الجبيهة — شارع الجامعة ٤٥",
-        neighborhood: "الجبيهة",
-        issueDate: "٢٠/١١/٢٠٢٤",
-        employee: doc.employee,
-        refNumber: `DOC-2024-${Math.floor(Math.random() * 99999).toString().padStart(5, "0")}`,
-      });
-    } catch (e) {
-      console.error("PDF generation error:", e);
+  const handleIssue = async () => {
+    if (!selectedCitizen) return;
+
+    setIsIssuing(true);
+    const result = await issueDocumentAction(selectedCitizen.id, selectedDoc);
+    setIsIssuing(false);
+
+    if (result.success && result.data) {
+      toast.success(result.message);
+      setIssuedDocData(result.data);
+      setIsModalOpen(true);
+    } else {
+      toast.error(result.message);
     }
   };
 
@@ -62,7 +52,7 @@ export default function DocumentManager({ recentDocs }: DocumentManagerProps) {
     {
       key: "type",
       header: "النوع",
-      render: (e) => <span className="badge-blue text-[10px]">{e.type}</span>,
+      render: (e) => <StatusBadge value={e.type} category="document_type" className="text-[10px]" />,
     },
     {
       key: "citizen",
@@ -75,6 +65,11 @@ export default function DocumentManager({ recentDocs }: DocumentManagerProps) {
       render: (e) => <span className="font-mono text-xs text-muted-foreground">{e.nid}</span>,
     },
     {
+      key: "archiveNumber",
+      header: "رقم الأرشفة",
+      render: (e: any) => <span className="font-mono text-[10px] text-muted-foreground bg-secondary px-2 py-1 rounded border shadow-sm">{e.archiveNumber}</span>,
+    },
+    {
       key: "time",
       header: "وقت الإصدار",
       render: (e) => <span className="text-muted-foreground">{e.time}</span>,
@@ -84,54 +79,43 @@ export default function DocumentManager({ recentDocs }: DocumentManagerProps) {
       header: "أصدرها",
       render: (e) => <span className="text-muted-foreground">{e.employee}</span>,
     },
-    {
-      key: "actions",
-      header: "الإجراءات",
-      render: (e) => (
-        <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2 text-primary hover:text-primary"
-            onClick={() => handleDownloadRecentPdf(e as unknown as RecentDoc)}
-          >
-            <Download className="w-3 h-3 ml-1" /> PDF
-          </Button>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-muted-foreground">
-            <Printer className="w-3 h-3 ml-1" /> طباعة
-          </Button>
-        </div>
-      ),
-    },
+
   ];
 
   return (
     <div className="space-y-6">
       <QuickIssue
         selectedDoc={selectedDoc}
-        setSelectedDoc={(d) => {
-          setSelectedDoc(d);
-          setIssued(false);
-        }}
-        citizenFound={citizenFound}
-        setCitizenFound={setCitizenFound}
-        onIssue={() => setIssued(true)}
+        setSelectedDoc={(d) => setSelectedDoc(d)}
+        selectedCitizen={selectedCitizen}
+        setSelectedCitizen={setSelectedCitizen}
+        onIssue={handleIssue}
+        isIssuing={isIssuing}
       />
-
-      {issued && (
-        <DocumentPreview
-          selectedDoc={selectedDoc}
-          downloading={downloading}
-          onDownload={handleDownloadPdf}
-        />
-      )}
 
       <div className="bg-card rounded-lg border shadow-sm">
         <div className="p-5 border-b">
           <h4 className="font-bold">أحدث الوثائق الصادرة اليوم</h4>
         </div>
         <DataTable columns={columns} data={recentDocs as any} />
+        {totalPages > 1 && (
+          <MPagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={(page) => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("page", page.toString());
+              router.replace(`${pathname}?${params.toString()}`);
+            }}
+          />
+        )}
       </div>
+
+      <PDFModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        docData={issuedDocData}
+      />
     </div>
   );
 }

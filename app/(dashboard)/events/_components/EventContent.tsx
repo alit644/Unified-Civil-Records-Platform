@@ -4,43 +4,32 @@ import { useState } from "react";
 import { Baby, Heart, Scale, Skull } from "lucide-react";
 import { Column, DataTable } from "@/components/DataTable";
 import { Events } from "@/types";
+import Link from "next/link";
 import Filters from "./Filters";
-import Drawer from "./Drawer";
+import EventDrawer from "./EventDrawer";
+import { EventType } from "@/lib/generated/prisma/enums";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import MPagination from "@/components/shared/MPagination";
+import { useEventFilters } from "@/hooks/use-event-filters";
 
 const eventTypes = [
-  { label: "ولادة", icon: Baby },
-  { label: "زواج", icon: Heart },
-  { label: "طلاق", icon: Scale },
-  { label: "وفاة", icon: Skull },
+  { label: "ولادة", value: EventType.BIRTH, icon: Baby },
+  { label: "زواج", value: EventType.MARRIAGE, icon: Heart },
+  { label: "طلاق", value: EventType.DIVORCE, icon: Scale },
+  { label: "وفاة", value: EventType.DEATH, icon: Skull },
 ];
 
-const typeFilter = ["الكل", "ولادة", "زواج", "طلاق", "وفاة"];
-
-const typeBadge = (type: string) => {
-  const map: Record<string, string> = { ولادة: "badge-blue", زواج: "badge-active", طلاق: "badge-orange", وفاة: "badge-gray" };
-  return map[type] || "badge-gray";
-};
-
-const statusBadge = (s: string) => {
-  if (s === "مقبول") return "badge-active";
-  if (s === "بانتظار التدقيق") return "badge-pending";
-  if (s === "مرفوض") return "badge-danger";
-  return "badge-gray";
-};
-
-interface Event {
-  id: string;
-  type: string;
-  citizen: string;
-  eventDate: string;
-  regDate: string;
-  deadline: string;
-  status: string;
-  urgent?: boolean;
-}
+const typeFilterOptions = [
+  { label: "ولادة", value: EventType.BIRTH },
+  { label: "زواج", value: EventType.MARRIAGE },
+  { label: "طلاق", value: EventType.DIVORCE },
+  { label: "وفاة", value: EventType.DEATH },
+];
 
 interface EventContentProps {
-  initialEvents: Event[];
+  initialEvents: Events[];
+  totalPages: number;
+  currentPage: number;
 }
 
 const columns: Column<Events>[] = [
@@ -55,7 +44,7 @@ const columns: Column<Events>[] = [
     key: "type",
     header: "النوع",
     render: (e) => (
-      <span className={typeBadge(e.type)}>{e.type}</span>
+      <StatusBadge value={e.type} category="event_type" />
     ),
   },
   {
@@ -80,50 +69,49 @@ const columns: Column<Events>[] = [
     ),
   },
   {
-    key: "deadline",
-    header: "الموعد النهائي",
-    render: (e) => (
-      <span className="text-muted-foreground">{e.deadline}</span>
-    ),
-  },
-  {
     key: "status",
     header: "الحالة",
     render: (e) => (
-      <span className={statusBadge(e.status)}>{e.status}</span>
+      <StatusBadge value={e.status} category="event_status" />
     ),
   },
   {
-    key: "urgent",
+    key: "actions",
     header: "خيارات",
     render: (e) => (
-      <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">عرض</button>
+      <Link href={`/events/${e.id}`}>
+        <button className="px-2 py-1 rounded border text-xs hover:bg-secondary/50 transition-colors">عرض</button>
+      </Link>
     ),
   },
 ]
 
-export default function EventContent({ initialEvents }: EventContentProps) {
+export default function EventContent({ initialEvents, totalPages, currentPage }: EventContentProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState("الكل");
-
-  const filteredEvents = activeFilter === "الكل"
-    ? initialEvents
-    : initialEvents.filter(e => e.type === activeFilter);
+  const [selectedType, setSelectedType] = useState<EventType | null>(null);
+  
+  const { isPending, setPage } = useEventFilters();
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <Filters activeFilter={activeFilter} setActiveFilter={setActiveFilter} setDrawerOpen={setDrawerOpen} typeFilter={typeFilter}/>
+      <Filters
+        setDrawerOpen={setDrawerOpen}
+        typeFilter={typeFilterOptions}
+      />
 
-      {/* Table */}
-      <div className="bg-card rounded-lg border shadow-sm">
-        <DataTable columns={columns} data={filteredEvents} />
+      <div className={`bg-card rounded-lg border shadow-sm overflow-hidden transition-opacity ${isPending ? 'opacity-50' : 'opacity-100'}`}>
+        <DataTable columns={columns} data={initialEvents} />
+        {totalPages > 1 && (
+            <MPagination 
+                totalPages={totalPages} 
+                currentPage={currentPage} 
+                onPageChange={setPage} 
+            />
+        )}
       </div>
-          
-      {/* Drawer */}
-      <Drawer 
-        isOpen={drawerOpen} 
+
+      <EventDrawer
+        isOpen={drawerOpen}
         onClose={() => { setDrawerOpen(false); setSelectedType(null); }}
         selectedType={selectedType}
         setSelectedType={setSelectedType}

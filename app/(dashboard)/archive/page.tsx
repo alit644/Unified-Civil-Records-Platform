@@ -3,6 +3,7 @@ import { Column, DataTable } from "@/components/DataTable";
 import { MetricCard } from "@/components/MetricCard";
 import { Archive } from "@/types";
 import { Search, Download } from "lucide-react";
+import { MBreadcrumbs } from "@/components/shared/MBreadcrumbs";
 
 const archives: Archive[] = [
   {
@@ -89,6 +90,7 @@ const columns: Column<Archive>[] = [
 export default function DigitalArchive() {
   return (
     <div className="space-y-6">
+      <MBreadcrumbs paths={[{ label: "الأرشيف الرقمي" }]} />
       {/* Stats */}
       <div
         className="grid grid-cols-1

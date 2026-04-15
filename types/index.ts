@@ -1,5 +1,5 @@
 import { Prisma } from "@/lib/generated/prisma/client";
-import { CitizenStatus, Gender, MaritalStatus, Role } from "@/lib/generated/prisma/enums";
+import { CitizenStatus, EventType, Gender, MaritalStatus, Role } from "@/lib/generated/prisma/enums";
 
 export interface Citizen {
       id: string,
@@ -20,7 +20,7 @@ export interface Citizen {
     }
 
 export interface Event {
-  type: string;
+  type: EventType;
   citizen: string;
   date: string;
   status: string;
@@ -33,9 +33,7 @@ export interface Events {
   citizen: string;
   eventDate: string;
   regDate: string;
-  deadline: string;
   status: string;
-  urgent?: boolean;
 }
 
 export interface Doc {
@@ -90,4 +88,15 @@ export interface IUser {
   name: string;
   role: string;
   updatedAt: Date;
+}
+
+export interface RecentDoc {
+  type: string;
+  citizen: string;
+  nid: string;
+  time: string;
+  employee: string;
+  archiveNumber: string;
+  id: string;
+  issuedAt: Date;
 }

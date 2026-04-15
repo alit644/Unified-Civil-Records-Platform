@@ -5,13 +5,18 @@ type ActionType =
   | "CREATE"
   | "CREATE_CITIZEN"
   | "UPDATE_CITIZEN"
+  | "CREATE_EVENT"
   | "UPDATE"
   | "DELETE"
   | "STATUS_CHANGE"
   | "EVENT_REGISTERED"
   | "DOCUMENT_ISSUED"
   | "APPROVE"
-  | "REJECT";
+  | "REJECT"
+  | "APPROVE_EVENT"
+  | "REJECT_EVENT"
+  | "DOCUMENT_EXTRACTED"
+  | "ISSUE_DOCUMENT";
 
 interface LogParams {
   action: ActionType;

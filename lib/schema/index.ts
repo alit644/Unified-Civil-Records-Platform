@@ -1,4 +1,5 @@
 import z from "zod";
+import { EventType } from "../generated/prisma/enums";
 
 export const loginSchema = z.object({
   username: z.string().min(1, "يرجى إدخال اسم المستخدم").max(20, "اسم المستخدم يجب أن لا يتجاوز 20 حرف"),
@@ -56,3 +57,54 @@ export const citizenSchema = z.object({
 });
 
 export type CitizenFormValues = z.infer<typeof citizenSchema>;
+
+export const birthEventSchema = z.object({
+  eventType: z.enum(EventType),
+  documentNumber: z.string().min(3, "رقم الوثيقة مطلوب"),
+  location: z.string().min(3 , "اسم المستفشى مطلوب"),
+  notes: z.string().optional(),
+  
+  // Birth specific fields (Main Focus)
+  babyFirstName: z.string().min(1, "اسم المولود مطلوب"),
+  babyGender: z.enum(["MALE", "FEMALE"], { error: "يجب اختيار الجنس" }),
+  birthDate: z.string().min(1, "تاريخ الولادة مطلوب"),
+  placeOfBirth: z.string().min(1, "مكان الولادة مطلوب"),
+
+  fatherNationalId: z.string().length(11, "يجب أن يكون الرقم الوطني للأب 11 رقم"),
+  motherNationalId: z.string().length(11, "يجب أن يكون الرقم الوطني للأم 11 رقم"),
+
+});
+
+export type BirthEventFormValues = z.infer<typeof birthEventSchema>;
+
+export const marriageFormSchema = z.object({
+  eventType: z.enum(EventType),
+  eventDate: z.string().min(1, "تاريخ عقد الزواج مطلوب"),
+  groomNationalId: z.string().length(11, "يجب أن يكون الرقم الوطني 11 رقم"),
+  brideNationalId: z.string().length(11, "يجب أن يكون الرقم الوطني 11 رقم"),
+  location: z.string().min(3, "مكان العقد (المحكمة) مطلوب"),
+  documentNumber: z.string().min(1, "رقم صك الزواج مطلوب"),
+});
+
+export type MarriageFormValues = z.infer<typeof marriageFormSchema>;
+
+export const divorceFormSchema = z.object({
+  eventType: z.enum(EventType),
+  eventDate: z.string().min(1, "تاريخ الطلاق مطلوب"),
+  groomNationalId: z.string().length(11, "يجب أن يكون الرقم الوطني 11 رقم"),
+  brideNationalId: z.string().length(11, "يجب أن يكون الرقم الوطني 11 رقم"),
+  location: z.string().min(3, "مكان الطلاق (المحكمة) مطلوب"),
+  documentNumber: z.string().min(1, "رقم صك الطلاق مطلوب"),
+});
+
+export type DivorceFormValues = z.infer<typeof divorceFormSchema>;
+
+export const deathEventSchema = z.object({
+  eventType: z.enum(EventType),
+  eventDate: z.string().min(1, "تاريخ الوفاة مطلوب"),
+  nationalId: z.string().length(11, "يجب أن يكون الرقم الوطني 11 رقم"),
+  location: z.string().min(3, "مكان الوفاة مطلوب"),
+  documentNumber: z.string().min(1, "رقم شهادة الوفاة مطلوب"),
+});
+
+export type DeathEventFormValues = z.infer<typeof deathEventSchema>;

@@ -6,10 +6,11 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import SearchBar from "./SearchBar";
 import CitizenActions from "./CitizenActions";
 import MPagination from "@/components/shared/MPagination";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, Suspense } from "react";
+import { useEffect, useMemo, useState } from "react";
 import EditCitizenDrawer from "./EditCitizenDrawer";
 import { Button } from "@/components/ui/button";
+import { useCitizenFilters } from "@/hooks/use-citizen-filters";
+import RecordExtractAction from "./RecordExtractAction";
 
 interface CitizensManagerProps {
   initialCitizens: Citizen[];
@@ -20,17 +21,15 @@ interface CitizensManagerProps {
 
 
 export default function CitizensManager({ initialCitizens, currentPage, totalPages, totalCitizens }: CitizensManagerProps) {
-  const router = useRouter();
+  const { setPage } = useCitizenFilters();
   const [editDrawerOpen, setEditDrawerOpen] = useState(false);
   const [citizens, setCitizens] = useState(initialCitizens);
   const [selectedCitizen, setSelectedCitizen] = useState<Citizen | null>(null);
+  
   useEffect(() => {
     setCitizens(initialCitizens);
   }, [initialCitizens]);
 
-  const handlePageChange = (page: number) => {
-    router.push(`/citizens?page=${page}`);
-  };
   const columns = useMemo<Column<Citizen>[]>(() => [
     {
       key: "name",
@@ -45,8 +44,7 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
       key: "nid",
       header: "الرقم الوطني",
       render: (c) => (
-        <span className="font-mono text-xs
-        text-muted-foreground">
+        <span className="font-mono text-xs text-muted-foreground">
           {c.nationalId}
         </span>
       ),
@@ -61,13 +59,23 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
       ),
     },
     {
-      key: "neighborhood",
-      header: "الحي",
+      key: "registry",
+      header: "محل ورقم القيد",
       render: (c) => (
-        <span >
-          {c.currentAddress?.split(" ").slice(0, 2).join(" ") || "غير محدد"}
-        </span>
+        <div className="flex flex-col">
+          <span className="text-xs font-bold">{c.registryPlace}</span>
+          <span className="text-[10px] text-muted-foreground">خـ / {c.registryNumber}</span>
+        </div>
       ),
+    },
+    {
+      key: "age",
+      header: "العمر",
+      render: (c) => {
+        const birthDate = new Date(c.dateOfBirth);
+        const age = new Date().getFullYear() - birthDate.getFullYear();
+        return <span className="text-xs">{age} سنة</span>;
+      },
     },
     {
       key: "marital",
@@ -88,7 +96,7 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
       header: "آخر تحديث",
       render: (c) => (
         <span className="text-muted-foreground">
-          {c.updatedAt.toISOString().split("T")[0]}
+          {new Date(c.updatedAt).toISOString().split("T")[0]}
         </span>
       ),
     },
@@ -98,13 +106,11 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
       render: (c) => (
         <div className="flex gap-1">
           <Link href={`/citizens/${c.id}`} className="px-2 py-1 rounded border text-xs hover:bg-secondary/50">عرض</Link>
-          <Button variant="outline" size="sm" className="bg-secondary/10! px-2 py-1 rounded border text-xs hover:bg-secondary/50" onClick={() => {
+          <Button variant="outline" size="sm" className="bg-secondary/10 px-2 py-1 rounded border text-xs hover:bg-secondary/50" onClick={() => {
             setSelectedCitizen(c);
             setEditDrawerOpen(true);
           }}>تعديل</Button>
-          <Button variant="outline" size="sm" className="bg-secondary/10! px-2 py-1 rounded border border-primary/20 text-primary text-[10px] sm:text-xs hover:bg-primary/5 transition-colors">
-            بيان قيد فردي
-          </Button>
+        <RecordExtractAction nationalId={c.nationalId} />
         </div>
       ),
     },
@@ -113,14 +119,15 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
   return (
     <div className="space-y-6">
       {/* Search Bar */}
-      <Suspense fallback={<div className="h-24 bg-muted rounded-lg animate-pulse" />}>
-        <SearchBar />
-      </Suspense>
+      <SearchBar />
 
       {/* Results */}
-      <div className="bg-card rounded-lg border shadow-sm">
-        <div className="p-4 sm:p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <h4 className="font-bold">نتائج البحث</h4>
+      <div className="bg-card rounded-2xl border shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-secondary/10">
+          <div className="flex items-center gap-2">
+            <h4 className="font-bold">نتائج البحث</h4>
+            <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">{totalCitizens} موطن</span>
+          </div>
 
           <CitizenActions citizens={citizens} />
         </div>
@@ -128,22 +135,23 @@ export default function CitizensManager({ initialCitizens, currentPage, totalPag
         <DataTable
           columns={columns}
           data={citizens}
-          rowHeight={56}
+          rowHeight={64}
           hoverable
         />
-        <div className="flex items-center justify-between border-t bg-secondary/30">
+        
+        {/* Pagination Footer */}
+        <div className="flex items-center justify-between border-t bg-secondary/5">
           <div className="text-sm text-muted-foreground p-4">
-            <span>عرض {currentPage * 10 - 10 + 1}–{currentPage * 10} من أصل {totalCitizens} مواطن</span>
+            <span>عرض {Math.min(totalCitizens, (currentPage - 1) * 10 + 1)}–{Math.min(totalCitizens, currentPage * 10)} من أصل {totalCitizens} مواطن</span>
           </div>
-          {/* pagination */}
           <MPagination
             totalPages={totalPages}
             currentPage={currentPage}
-            onPageChange={(page) => handlePageChange(page)}
+            onPageChange={setPage}
           />
         </div>
-
       </div>
+
       {selectedCitizen && (
         <EditCitizenDrawer
           open={editDrawerOpen}

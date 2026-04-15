@@ -16,14 +16,6 @@ export default function CitizenProfileContent({ events, documents, auditLog }: C
 
   return (
     <div className="space-y-6">
-      {/* Profile header Actions (Inside the main card usually, but I'll place them as part of the overall interactive UI) */}
-      {/* The upper actions need to be here or the entire upper card needs to be here if it's too tied.
-          Actually, let's keep the header in the server component for basic info, but put the actions in a client component?
-          Or just make a 'ProfileHeaderActions' component.
-      */}
-
-      {/* Since the user asked to separate client parts, the tabs and their content are the main client-heavy parts. */}
-
       <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
         <div className="border-b flex overflow-x-auto scrollbar-hide">
           {tabs.map((tab, i) => (

@@ -6,48 +6,100 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { StatePlaceholder } from "@/components/shared/StatePlaceholder";
 import { AlertCircle, RefreshCcw } from "lucide-react";
-
-const events = [
-  { type: "ولادة", date: "١٥/٠٣/١٩٩٠", status: "مقبول", employee: "خالد العمري", icon: "👶" },
-  { type: "زواج", date: "١٠/٠٦/٢٠١٥", status: "مقبول", employee: "سارة الحسن", icon: "💍" },
-];
-
-const documents = [
-  { type: "سند إقامة", date: "١٥/١١/٢٠٢٤", employee: "م. أحمد" },
-  { type: "شهادة ميلاد", date: "٢٠/٠٣/١٩٩٠", employee: "خالد العمري" },
-  { type: "شهادة زواج", date: "١٢/٠٦/٢٠١٥", employee: "سارة الحسن" },
-];
-
-const auditLog = [
-  { date: "١٥/١١/٢٠٢٤ ١٠:٣٢", employee: "م. أحمد", action: "تعديل بيانات", field: "العنوان", oldVal: "شارع المدينة ١٢", newVal: "شارع الجامعة ٤٥" },
-  { date: "١٠/٠٨/٢٠٢٤ ١٤:١٥", employee: "سارة الحسن", action: "إصدار وثيقة", field: "سند إقامة", oldVal: "—", newVal: "تم الإصدار" },
-];
+import { EVENT_TYPE_MAP, EVENT_STATUS_MAP } from "@/lib/mappings";
+import { MBreadcrumbs } from "@/components/shared/MBreadcrumbs";
 
 export default async function CitizenProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+
   try {
     const citizen = await prisma.citizen.findUnique({
-    where: { id },
-  });
-  if (!citizen) {
-    return (
-      <div className="py-8">
-        <StatePlaceholder
-          variant="error"
-          icon={AlertCircle}
-          title="المواطن غير موجود"
-          description="المواطن الذي تحاول عرضه غير موجود في قاعدة البيانات."
-          action={{
-            label: "العودة إلى قائمة المواطنين",
-            icon: RefreshCcw,
-            href: "/citizens",
-          }}
-        />
-      </div>
-    );
-  }
+      where: { id },
+      include: {
+        primaryEvents: {
+          include: { employee: true },
+          orderBy: { eventDate: 'desc' }
+        },
+        secondaryEvents: {
+          include: { employee: true },
+          orderBy: { eventDate: 'desc' }
+        },
+        documents: {
+          include: { employee: true },
+          orderBy: { issuedAt: 'desc' }
+        }
+      }
+    });
+
+    if (!citizen) {
+      return (
+        <div className="py-8">
+          <StatePlaceholder
+            variant="error"
+            icon={AlertCircle}
+            title="المواطن غير موجود"
+            description="المواطن الذي تحاول عرضه غير موجود في قاعدة البيانات."
+            action={{
+              label: "العودة إلى قائمة المواطنين",
+              icon: RefreshCcw,
+              href: "/citizens",
+            }}
+          />
+        </div>
+      );
+    }
+
+    // جلب سجل التدقيق الخاص بهذا المواطن
+    const dbLogs = await prisma.auditLog.findMany({
+      where: { recordId: id },
+      include: { employee: true },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+
+    // تنسيق الواقعات (الأولية والثانوية)
+    const allEvents = [
+      ...citizen.primaryEvents.map(e => ({
+        type: EVENT_TYPE_MAP[e.eventType].label,
+        date: format(new Date(e.eventDate), "dd/MM/yyyy"),
+        status: EVENT_STATUS_MAP[e.status].label,
+        employee: e.employee.name,
+        icon: e.eventType === 'BIRTH' ? '👶' : e.eventType === 'MARRIAGE' ? '💍' : e.eventType === 'DIVORCE' ? '💔' : '⚰️'
+      })),
+      ...citizen.secondaryEvents.map(e => ({
+        type: EVENT_TYPE_MAP[e.eventType].label + " (طرف ثانٍ)",
+        date: format(new Date(e.eventDate), "dd/MM/yyyy"),
+        status: EVENT_STATUS_MAP[e.status].label,
+        employee: e.employee.name,
+        icon: e.eventType === 'BIRTH' ? '👶' : e.eventType === 'MARRIAGE' ? '💍' : e.eventType === 'DIVORCE' ? '💔' : '⚰️'
+      }))
+    ];
+
+    // تنسيق الوثائق
+    const formattedDocs = citizen.documents.map(d => ({
+      type: d.type,
+      date: format(new Date(d.issuedAt), "dd/MM/yyyy"),
+      employee: d.employee.name
+    }));
+
+    // تنسيق سجل التدقيق
+    const formattedLogs = dbLogs.map(l => ({
+      date: format(new Date(l.createdAt), "dd/MM/yyyy HH:mm"),
+      employee: l.employee.name,
+      action: l.action === 'UPDATE' ? 'تعديل' : l.action === 'CREATE' ? 'إضافة' : l.action,
+      field: l.tableName,
+      oldVal: "—",
+      newVal: "تفاصيل التعديل متاحة في الأرشيف"
+    }));
+
     return (
     <div className="space-y-6">
+      <MBreadcrumbs 
+        paths={[
+          { label: "بحث المواطنين", href: "/citizens" },
+          { label: `${citizen?.firstName} ${citizen?.lastName}` }
+        ]} 
+      />
       {/* Profile header (Server component part for branding/static info) */}
       <div className="bg-card rounded-xl border p-6 shadow-sm flex flex-wrap items-center justify-between gap-6 overflow-hidden relative group">
         {/* Subtle background decoration */}
@@ -118,28 +170,28 @@ export default async function CitizenProfilePage({ params }: { params: Promise<{
       </div>
 
       <CitizenProfileContent
-        events={events}
-        documents={documents}
-        auditLog={auditLog}
+        events={allEvents}
+        documents={formattedDocs}
+        auditLog={formattedLogs}
       />
     </div>
   );
-  } catch (error) {
-      console.error("Error loading employee management page:", error);
-      return (
-        <div className="py-8">
-          <StatePlaceholder
-            variant="error"
-            icon={AlertCircle}
-            title="فشل في تحميل بيانات المواطن"
-            description="حدث خطأ أثناء محاولة الاتصال بقاعدة البيانات. يرجى المحاولة مرة أخرى."
-            action={{
-              label: "إعادة تحميل الصفحة",
-              icon: RefreshCcw,
-              href: "/citizens",
-            }}
-          />
-        </div>
-      );
-    }
+} catch (error) {
+    console.error("Error loading citizen profile page:", error);
+    return (
+      <div className="py-8">
+        <StatePlaceholder
+          variant="error"
+          icon={AlertCircle}
+          title="فشل في تحميل بيانات المواطن"
+          description="حدث خطأ أثناء محاولة الاتصال بقاعدة البيانات. يرجى المحاولة مرة أخرى."
+          action={{
+            label: "إعادة تحميل الصفحة",
+            icon: RefreshCcw,
+            href: "/citizens",
+          }}
+        />
+      </div>
+    );
+  }
 }

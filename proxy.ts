@@ -8,7 +8,8 @@ export async function proxy(request: NextRequest) {
 
   // 1. القائمة البيضاء: المسارات التي يجب ألا يفحصها الـ Middleware أبداً
   const isAuthRoute = pathname === "/login" || pathname === "/register";
-  const isPublicRoute = isAuthRoute || pathname === "/unauthorized";
+  const isVerifyRoute = pathname.startsWith("/verify");
+  const isPublicRoute = isAuthRoute || pathname === "/unauthorized" || isVerifyRoute;
 
   // 2. جلب الجلسة
   const { data: session } = await betterFetch<{
