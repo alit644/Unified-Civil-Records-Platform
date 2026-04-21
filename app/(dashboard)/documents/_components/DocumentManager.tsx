@@ -115,6 +115,7 @@ export default function DocumentManager({ recentDocs, totalPages, currentPage }:
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         docData={issuedDocData}
+        
       />
     </div>
   );

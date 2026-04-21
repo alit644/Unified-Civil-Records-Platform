@@ -1,5 +1,6 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition, useEffect } from "react";
+import { useDebounce } from "use-debounce";
 
 export function useCitizenFilters() {
   const searchParams = useSearchParams();
@@ -11,26 +12,25 @@ export function useCitizenFilters() {
   const activeStatus = searchParams.get("status") || "all";
   const initialSearch = searchParams.get("q") || "";
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
-  
-  const [searchValue, setSearchValue] = useState(initialSearch);
 
+  const [searchValue, setSearchValue] = useState(initialSearch);
+  const [debouncedSearch] = useDebounce(searchValue, 400);
+
+  // مزامنة قيمة البحث عند تغيّر الـ URL (مثلاً عند الرجوع للصفحة)
   useEffect(() => {
     setSearchValue(initialSearch);
   }, [initialSearch]);
 
+  // تحديث الـ URL عند تغيّر القيمة المؤجّلة
   useEffect(() => {
-    if (searchValue === initialSearch) return;
-
-    const timer = setTimeout(() => {
-      updateUrl("q", searchValue, true);
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [searchValue]);
+    if (debouncedSearch === initialSearch) return;
+    updateUrl("q", debouncedSearch, true);
+  }, [debouncedSearch]);
+  
 
   const updateUrl = (key: string, value: string, resetPage = true) => {
     const params = new URLSearchParams(searchParams);
-    
+
     if (value && value !== "all") {
       params.set(key, value);
     } else {
@@ -40,7 +40,7 @@ export function useCitizenFilters() {
     if (resetPage) {
       params.delete("page");
     }
-    
+
     startTransition(() => {
       replace(`${pathname}?${params.toString()}`);
     });
