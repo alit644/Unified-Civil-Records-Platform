@@ -76,6 +76,8 @@ describe("EmployeeManager", () => {
             },
           },
         ]}
+        currentPage={1}
+        totalPages={1}
       />
     );
 

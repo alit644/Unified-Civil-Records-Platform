@@ -35,7 +35,6 @@ const DivorceFields = ({ onSuccess }: IDivorceForm) => {
   const isParentsVerified = !!(verifiedNames.groom && verifiedNames.bride);
 
   const onSubmit = async (data: DivorceFormValues) => {
-    console.log(data);
     try {
       const result = await registerDivorceEvent(data);
       if (result.success) {
