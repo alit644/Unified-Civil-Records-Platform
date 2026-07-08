@@ -32,7 +32,6 @@ const DeathFields = ({ onSuccess }: IDeathFields) => {
   const isParentsVerified = !!(verifiedNames.nationalId);
 
   const onSubmit = async (data: DeathEventFormValues) => {
-    console.log(data);
     try {
       const result = await registerDeathEvent(data);
       if (result.success) {
