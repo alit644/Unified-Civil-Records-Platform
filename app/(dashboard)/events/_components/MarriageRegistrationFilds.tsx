@@ -36,7 +36,6 @@ const MarriageRegistrationFilds = ({ onSuccess }: IMarriageRegistrationFilds) =>
   const isParentsVerified = !!(verifiedNames.father && verifiedNames.mother);
 
   const onSubmit = async (data: MarriageFormValues) => {
-    console.log(data);
     try {
       const result = await registerMarriageEvent(data);
       if (result.success) {
